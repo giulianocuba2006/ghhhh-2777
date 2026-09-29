@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090b12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gran Hermano Simulator">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>Gran Hermano — Simulador Avanzado</title>
+<style>
+:root{
+  --bg:#090b12;--panel:#111522;--panel2:#171c2b;--line:#2b3348;--text:#eef2ff;
+  --muted:#9ca7bf;--accent:#8b5cf6;--accent2:#ec4899;--good:#22c55e;--bad:#ef4444;
+  --warn:#f59e0b;--cyan:#22d3ee;--shadow:0 18px 60px rgba(0,0,0,.35);--radius:18px;
+}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top,#151a2d 0,#090b12 48%);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button,input,select,textarea{font:inherit} button{cursor:pointer}
+.app{min-height:100vh}.topbar{position:sticky;top:0;z-index:30;background:rgba(9,11,18,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:14px 18px}
+.topbar-inner{max-width:1500px;margin:auto;display:flex;align-items:center;gap:14px}.brand{font-weight:900;letter-spacing:.04em;font-size:20px}.brand span{color:var(--accent2)}
+.badge{padding:5px 9px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:12px}
+.spacer{flex:1}.layout{max-width:1500px;margin:auto;display:grid;grid-template-columns:235px 1fr;min-height:calc(100vh - 70px)}
+.sidebar{border-right:1px solid var(--line);padding:18px 12px;position:sticky;top:70px;height:calc(100vh - 70px);overflow:auto}
+.navbtn{width:100%;text-align:left;background:transparent;border:1px solid transparent;color:var(--muted);padding:10px 12px;border-radius:12px;margin:3px 0}
+.navbtn:hover,.navbtn.active{background:var(--panel2);border-color:var(--line);color:var(--text)}
+main{padding:22px;min-width:0}.screen{display:none}.screen.active{display:block}
+.hero{padding:25px;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(236,72,153,.08));box-shadow:var(--shadow);margin-bottom:18px}
+h1,h2,h3{margin:0 0 9px}.sub{color:var(--muted)}.grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:rgba(17,21,34,.9);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.16)}
+label{display:block;color:var(--muted);font-size:13px;margin:0 0 6px}input,select,textarea{width:100%;background:#0d111c;border:1px solid var(--line);color:var(--text);border-radius:11px;padding:10px 11px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--accent)}textarea{min-height:90px;resize:vertical}
+.btn{border:1px solid var(--line);background:#171c2b;color:var(--text);padding:9px 13px;border-radius:11px;font-weight:700}.btn:hover{filter:brightness(1.15)}.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0}.btn.good{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4)}.btn.danger{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.4)}.btn.warn{background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.4)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{color:var(--muted);font-size:12px;text-transform:uppercase}
+.avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#252b3d;border:2px solid var(--line)}.avatar.sm{width:34px;height:34px}.avatar.lg{width:86px;height:86px}.avatar.gray{filter:grayscale(100%)}
+.player-row{display:grid;grid-template-columns:54px 1.2fr .8fr .8fr .8fr;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.kpi{font-size:28px;font-weight:900}.tiny{font-size:12px;color:var(--muted)}.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#1c2233;border:1px solid var(--line);font-size:12px}
+.pos{color:var(--good)}.neg{color:var(--bad)}.neutral{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}.final-contenders{grid-template-columns:repeat(3,minmax(250px,1fr));gap:22px}.final-contenders .person-card{padding:10px}.final-contenders .person-card img{width:min(100%,320px)!important;aspect-ratio:1/1!important;height:auto!important;object-fit:contain!important;margin:0 auto 10px}.final-contenders .person-card h3{font-size:18px}@media(max-width:750px){.final-contenders{grid-template-columns:1fr}}.person-card{text-align:center;min-width:0}.person-card img{width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:14px;border:1px solid var(--line);background:#20263a;display:block}.photo-square{width:100%!important;height:auto!important;aspect-ratio:1/1!important;object-fit:contain!important;border-radius:14px!important;border:1px solid var(--line)!important;background:#20263a!important;display:block}.person-card.eliminated{opacity:.7}.person-card.eliminated img{filter:grayscale(100%)}
+.house-grid{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:14px}.house-card{text-align:center;min-width:0}.house-card img{width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:14px;border:1px solid var(--line);display:block;background:#20263a}.house-card.eliminated{opacity:.62}.house-card.eliminated img{filter:grayscale(100%)}.house-name{font-weight:800;font-size:13px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.house-state{font-size:11px;color:var(--muted);margin-top:2px}.house-state.active{color:var(--good)}
+@media(max-width:1100px){.house-grid{grid-template-columns:repeat(4,minmax(130px,1fr))}}@media(max-width:750px){.house-grid{grid-template-columns:repeat(3,minmax(105px,1fr))}}@media(max-width:520px){.house-grid{grid-template-columns:repeat(2,minmax(100px,1fr))}}
+.event-card{display:grid;grid-template-columns:70px 1fr 70px;gap:12px;align-items:center}.event-card img{width:70px;height:70px;border-radius:14px;object-fit:cover}.event-card .single{grid-column:1}.event-text{padding:12px;border-radius:14px;background:#0d111c;border:1px solid var(--line)}
+.gala-stage{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}.gala-card{position:relative;text-align:center;padding:12px;border:1px solid var(--line);border-radius:16px;background:#0d111c}.gala-card img{width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:14px;background:#20263a;display:block}.gala-card.safe{opacity:.78}.gala-card.danger{border-color:rgba(239,68,68,.55);box-shadow:0 0 0 1px rgba(239,68,68,.12) inset}.metric-note{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.metric-note>div{padding:12px;border:1px solid var(--line);border-radius:13px;background:#0d111c}.event-choice{min-height:110px;text-align:left}.event-choice strong{display:block;margin-bottom:5px}@media(max-width:700px){.metric-note{grid-template-columns:1fr}}
+.section-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:4px 0 12px}.section-title small{color:var(--muted)}
+.notice{padding:12px 14px;border:1px solid rgba(34,211,238,.3);background:rgba(34,211,238,.07);border-radius:13px}.warning{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08)}.danger-box{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.08)}
+.steps{display:flex;gap:7px;overflow:auto;margin-bottom:16px}.step{padding:7px 10px;border-radius:999px;border:1px solid var(--line);white-space:nowrap;color:var(--muted)}.step.on{color:var(--text);background:var(--panel2);border-color:var(--accent)}
+.progress{height:8px;background:#20263a;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:100;padding:18px}.modal.open{display:flex}.modal-box{max-width:720px;width:100%;max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+.toast{position:fixed;right:18px;bottom:18px;z-index:200;background:#171c2b;border:1px solid var(--line);padding:12px 16px;border-radius:12px;display:none}.toast.show{display:block}
+.mini-list{max-height:340px;overflow:auto}.relation-grid{overflow:auto}.relation-grid table{min-width:760px}.rel-cell{min-width:100px}.photo-input{display:grid;grid-template-columns:60px 1fr;gap:10px;align-items:center}
+.footer-actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:18px}
+@media(max-width:950px){.layout{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);display:flex;overflow:auto;gap:4px}.navbtn{min-width:max-content}.g2,.g3,.g4{grid-template-columns:1fr}.player-row{grid-template-columns:56px 1fr;align-items:start}.player-row>*{min-width:0}.player-row>*:nth-child(n+3){grid-column:2}.player-row>*:nth-child(3),.player-row>*:nth-child(4),.player-row>*:nth-child(5){display:block}.player-row input,.player-row select{width:100%}.photo-input{grid-template-columns:72px 1fr}}
+@media(max-width:520px){main{padding:12px}.topbar{padding:10px}.topbar-inner{gap:6px;flex-wrap:wrap}.brand{font-size:13px}.topbar .btn{padding:8px 10px;font-size:12px}.card{padding:12px}.player-row{grid-template-columns:56px 1fr}.player-row>*:nth-child(n+3){grid-column:2}.house-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gala-stage{grid-template-columns:1fr}.cards{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}}
+
+/* V15 — compatibilidad móvil */
+html{min-width:320px;-webkit-text-size-adjust:100%}body{-webkit-tap-highlight-color:transparent;overflow-x:hidden}button,input,select,textarea{touch-action:manipulation}button,.btn,.navbtn{min-height:44px}.navbtn{display:flex;align-items:center}.topbar{padding-top:max(10px,env(safe-area-inset-top));}.sidebar{padding-bottom:max(18px,env(safe-area-inset-bottom));}
+@media(max-width:750px){.layout{display:block}.sidebar{position:sticky;top:0;z-index:25;background:rgba(9,11,18,.96);padding:8px;white-space:nowrap}.sidebar .navbtn{display:inline-flex;width:auto;min-width:max-content;margin:0 3px;padding:8px 12px}.topbar-inner{align-items:center}.topbar .spacer{display:none}.topbar .btn{flex:1;min-width:0}.player-row{padding:12px 0}.player-row input,.player-row select{min-height:44px}.photo-input{grid-template-columns:80px 1fr}.photo-input .avatar.lg{width:80px;height:80px}.modal{padding:10px}.modal-box{max-height:92vh;padding:14px}.actions .btn{flex:1 1 180px}.relation-grid{-webkit-overflow-scrolling:touch}.relation-grid table{min-width:700px}}
+@media(max-width:520px){.topbar-inner{display:grid;grid-template-columns:1fr 1fr}.brand{grid-column:1/-1}.topbar .badge{display:none}.topbar .btn{width:100%;font-size:13px}.card{overflow:hidden}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.person-card img,.house-card img{min-height:120px}.event-card{grid-template-columns:52px 1fr}.event-card img{width:52px;height:52px}.gala-stage{grid-template-columns:1fr 1fr}.gala-card{padding:8px}.gala-card img{min-height:140px}.player-row{grid-template-columns:52px 1fr}.photo-input{grid-template-columns:72px 1fr}.footer-actions{display:grid;grid-template-columns:1fr}.footer-actions .btn{width:100%}}
+.mobile-help{display:none;margin-bottom:14px}.mobile-help strong{display:block;margin-bottom:4px}@media(max-width:750px){.mobile-help{display:block}}
+</style>
+</head>
+<body>
+<div class="app">
+<div id="webModeNotice" class="mobile-help notice" style="display:none"><strong>📱 Modo web para iPhone</strong><span id="webModeText">Si abriste este archivo directamente desde Archivos/WhatsApp, Safari puede mostrarlo como archivo local y no ejecutar correctamente el simulador. Para usarlo en iPhone, abrí la versión publicada mediante una URL HTTPS.</span></div>
+<header class="topbar"><div class="topbar-inner"><div class="brand">GRAN <span>HERMANO</span> // SIMULADOR</div><span id="weekBadge" class="badge">Semana 0</span><span id="modeBadge" class="badge">Configuración</span><div class="spacer"></div><button class="btn" onclick="saveSeasonEverywhere()">💾 Guardar temporada</button><button class="btn" onclick="openLoadOptions()">📂 Cargar temporada</button></div></header><input id="seasonFileInput" type="file" accept=".ghseason,.ghseason.json,.json,application/json" style="display:none" onchange="importSeasonFile(event)">
+<div class="layout">
+<aside class="sidebar">
+<button class="navbtn active" data-screen="config">⚙ Configuración</button>
+<button class="navbtn" data-screen="popularity">❤ Popularidad</button>
+<button class="navbtn" data-screen="relations">↔ Relaciones</button>
+<button class="navbtn" data-screen="events">⚡ Eventos</button>
+<button class="navbtn" data-screen="weekly">▶ Semana</button>
+<button class="navbtn" data-screen="votes">☷ Confesionario</button>
+<button class="navbtn" data-screen="plate">▦ Placa</button>
+<button class="navbtn" data-screen="elimination">☠ Eliminación</button>
+<button class="navbtn" data-screen="repechage">↩ Repechaje</button>
+<button class="navbtn" data-screen="final">🏆 Final</button>
+<button class="navbtn" data-screen="stats">▤ Estadísticas</button>
+</aside>
+<main>
+
+<section id="config" class="screen active">
+<div class="hero"><h1>Configuración de la casa</h1><p class="sub">Cargá participantes, fotos, modo de juego y hasta cuatro nuevos ingresos. Todo se conserva en el navegador.</p></div><div class="notice mobile-help"><strong>📱 Modo celular</strong><span class="tiny">Si abriste este archivo desde WhatsApp y podés ver esta pantalla, el juego ya está ejecutándose. Si WhatsApp solo muestra el archivo como documento o texto y no aparecen botones, descargalo y elegí <b>Abrir con Chrome</b> (Android) o <b>Abrir en Safari</b> (iPhone). No uses la vista previa interna de WhatsApp.</span></div>
+<div class="grid g2">
+<div class="card"><h2>Parámetros iniciales</h2>
+<div class="grid g2">
+<div><label>Cantidad de jugadores</label><input id="playerCount" type="number" min="3" max="50" value="12" onchange="resizePlayers()"></div>
+<div><label>Modo de juego</label><select id="gameMode"><option value="natural">Dejar que el simulador decida todo</option><option value="personal">Personal</option><option value="interactive">Interactivo — elegir Avatar</option></select></div>
+</div>
+<div style="margin-top:12px"><label>Avatar del usuario</label><select id="avatarSelect"></select></div>
+<div class="actions"><button class="btn primary" onclick="applyConfig()">Aplicar configuración</button><button class="btn" onclick="randomizePlayers()">Nombres aleatorios</button></div>
+</div>
+<div class="card"><h2>Cronograma dinámico</h2><div id="schedule" class="mini-list"></div></div>
+</div>
+<div class="card" style="margin-top:14px"><div class="section-title"><h2>Participantes</h2><small>Nombre + URL de foto o archivo local</small></div><div id="playersForm"></div></div>
+<div class="card" style="margin-top:14px"><h2>Nuevos ingresos</h2><p class="sub">Cuatro competidores preparados para la fase de repechaje.</p><div id="newcomersForm" class="grid g2"></div></div>
+<div class="card" style="margin-top:14px"><h2>Temporada</h2><div class="grid g2"><div><label>Código JSON de temporada</label><textarea id="seasonCode" placeholder="Exportá o pegá aquí un código JSON. En celular es la forma más segura de mover una partida entre dispositivos..."></textarea></div><div><label>Controles</label><div class="actions"><button class="btn primary" onclick="saveSeasonEverywhere()">💾 Guardar temporada</button><button class="btn" onclick="openLoadOptions()">📂 Cargar temporada</button><button class="btn" onclick="exportSeason()">Copiar código</button><button class="btn primary" onclick="importSeason()">Importar código</button><button class="btn danger" onclick="resetGame(true)">Reiniciar completamente</button></div><p class="tiny" style="margin-top:10px">La opción Guardar crea una copia descargable de la temporada y además guarda una copia en este navegador. En celular, para mover una temporada entre dispositivos, usá preferentemente el archivo descargado o el código. La opción Cargar permite recuperar una copia desde archivo, código o el último guardado del navegador.</p></div></div></div>
+</section>
+
+<section id="popularity" class="screen">
+<div class="hero"><h1>Popularidad dual</h1><p class="sub">Dos medidores independientes y fáciles de leer: <b>Apoyo</b> y <b>Rechazo</b>. Ambos van de 0 a 100. En placa positiva, más apoyo protege; en placa negativa, más rechazo expone.</p></div>
+<div class="card" style="margin-bottom:14px"><div class="metric-note"><div><b>🟢 Apoyo positivo</b><br><span class="tiny">0 = sin apoyo · 100 = máximo apoyo. Más alto es mejor en placa positiva.</span></div><div><b>🔴 Rechazo negativo</b><br><span class="tiny">0 = sin rechazo · 100 = máximo rechazo. Más alto es peor en placa negativa.</span></div></div><p class="tiny" style="margin-top:10px">Inicio de temporada: participantes originales <b>45/45</b>. Reingresados por repechaje y nuevos ingresos: <b>45/45</b>. Los límites siguen siendo 0–100.</p></div>
+<div class="toolbar"><button class="btn" onclick="resetPopularity()">Restablecer todo</button><button class="btn warn" onclick="randomPopularity()">Aleatorizar</button><button class="btn primary" onclick="applyPopularity()">Guardar popularidades</button></div>
+<div class="card"><div id="popularityTable"></div></div>
+</section>
+
+<section id="relations" class="screen">
+<div class="hero"><h1>Matriz asimétrica de relaciones</h1><p class="sub">Definí cómo percibe cada jugador al resto. Las relaciones pueden ser unilaterales.</p><p class="tiny">Todos comienzan en 0 (neutro), pero podés elegir libremente cualquier participante en “Establecer relaciones para” y definir sus vínculos iniciales antes de comenzar la temporada.</p></div>
+<div class="card"><div class="toolbar"><label style="margin:0">Establecer relaciones para:</label><select id="relationOrigin" onchange="renderRelations()" style="max-width:300px"></select><label style="margin:0 0 0 8px"><input id="nonMutual" type="checkbox" style="width:auto"> ¿No mutuo?</label><button class="btn" onclick="resetCurrentRelations()">Reiniciar jugador</button><button class="btn" onclick="resetAllRelations()">Reiniciar todos</button><button class="btn primary" onclick="toast('Relaciones guardadas')">Enviar</button></div><div id="relationEditor"></div></div>
+</section>
+
+<section id="events" class="screen">
+<div class="hero"><h1>Gestor y motor de eventos</h1><p class="sub">Los eventos habilitados se evalúan al inicio de cada semana. Los impactos determinan qué recibe cada protagonista; los filtros estructurales solo determinan quién puede protagonizarlos. <b>La popularidad pública (Apoyo/Rechazo) no se utiliza para asignar eventos.</b></p></div>
+<div class="grid g2">
+<div class="card"><h2>Crear evento custom</h2><div class="grid g2">
+<div><label>Nombre</label><input id="evName" placeholder="Ej. Ligera unión"></div><div><label>Tipo</label><select id="evType" onchange="toggleCustomEventFields()"><option value="individual">Individual</option><option value="duo">Dúo</option></select></div>
+<div style="grid-column:1/-1"><label>Texto descriptivo</label><textarea id="evText" placeholder="Player1 tuvo un momento con Player2...">Player1 tuvo un momento con Player2...</textarea><div class="tiny" style="margin-top:6px">Usá <b>Player1</b> y <b>Player2</b> (también se aceptan “Player 1” y “Player 2”). Al ocurrir el evento se reemplazan automáticamente por los nombres reales.</div></div>
+<div id="singleImpactFields" style="grid-column:1/-1" class="card"><h3>⚡ Impacto del evento — Individual</h3><p class="tiny">Configurá por separado qué provoca el evento dentro de la casa y qué provoca ante el público. Pueden ser positivos, negativos o no tener impacto.</p><div class="grid g2"><div><h4>🏠 Impacto en la casa</h4><label>Efecto interno</label><select id="evHouseMod"><option value="positive">Positivo — mejora su posición en la casa</option><option value="negative">Negativo — empeora su posición en la casa</option><option value="neutral">Sin impacto</option></select><label style="margin-top:8px">Intensidad interna</label><select id="evHouseSeverity"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div><div><h4>👥 Impacto ante el público</h4><label>Efecto público</label><select id="evMod"><option value="positive">Positivo — aumenta apoyo</option><option value="negative">Negativo — aumenta rechazo</option><option value="neutral">Sin impacto</option></select><label style="margin-top:8px">Intensidad pública</label><select id="evSeverity"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div></div></div>
+<div id="duoImpactFields" style="display:none;grid-column:1/-1" class="card"><h3>⚡ Impacto por participante — Dúo</h3><p class="tiny">Cada protagonista puede afectar de manera diferente a la casa y al público. Por ejemplo, Player 1 puede quedar mal ante la casa pero bien ante el público, mientras Player 2 recibe el efecto contrario.</p><div class="grid g2"><div><h4>PLAYER 1</h4><label>🏠 Casa — efecto</label><select id="evHouseMod1"><option value="positive">Positivo — mejora su posición en la casa</option><option value="negative">Negativo — empeora su posición en la casa</option><option value="neutral">Sin impacto</option></select><label style="margin-top:8px">🏠 Casa — intensidad</label><select id="evHouseSeverity1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><label style="margin-top:8px">👥 Público — efecto</label><select id="evMod1"><option value="positive">Positivo — aumenta apoyo</option><option value="negative">Negativo — aumenta rechazo</option><option value="neutral">Sin impacto</option></select><label style="margin-top:8px">👥 Público — intensidad</label><select id="evSeverity1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div><div><h4>PLAYER 2</h4><label>🏠 Casa — efecto</label><select id="evHouseMod2"><option value="positive">Positivo — mejora su posición en la casa</option><option value="negative">Negativo — empeora su posición en la casa</option><option value="neutral">Sin impacto</option></select><label style="margin-top:8px">🏠 Casa — intensidad</label><select id="evHouseSeverity2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><label style="margin-top:8px">👥 Público — efecto</label><select id="evMod2"><option value="positive">Positivo — aumenta apoyo</option><option value="negative">Negativo — aumenta rechazo</option><option value="neutral">Sin impacto</option></select><label style="margin-top:8px">👥 Público — intensidad</label><select id="evSeverity2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div></div></div>
+<div id="eligibilityFields" style="grid-column:1/-1" class="card"><h3>🎯 Filtros de elegibilidad</h3><p class="tiny">No modifican a nadie. Solo determinan quién puede ser elegido para protagonizar el evento. En un Dúo se aplican a Player 1 y Player 2; la relación se evalúa exclusivamente entre ellos.</p><div class="grid g2"><div><label>Género requerido para los protagonistas</label><select id="evGender"><option value="any">Cualquiera</option><option value="male">Hombre</option><option value="female">Mujer</option></select></div><div></div><div><label>Apoyo mínimo</label><input id="evPopMin" type="number" min="0" max="100" value="0"></div><div><label>Apoyo máximo</label><input id="evPopMax" type="number" min="0" max="100" value="100"></div><div><label>Rechazo mínimo</label><input id="evNegMin" type="number" min="0" max="100" value="0"></div><div><label>Rechazo máximo</label><input id="evNegMax" type="number" min="0" max="100" value="100"></div><div id="relationFilterFields"><label>Relación mínima <span class="tiny">(solo Dúo)</span></label><input id="evRelMin" type="number" value="-10"></div><div id="relationFilterFieldsMax"><label>Relación máxima <span class="tiny">(solo Dúo)</span></label><input id="evRelMax" type="number" value="10"></div></div></div>
+</div><div class="actions"><button class="btn primary" onclick="createCustomEvent()">Crear evento</button></div></div>
+<div class="card"><h2>Presets y toggles</h2><div id="eventList"></div></div></div>
+</section>
+
+<section id="weekly" class="screen">
+<div class="hero"><h1>Semana <span id="weeklyNumber">1</span></h1><p class="sub">Eventos de la casa → líder → fulminante → confesionario.</p></div>
+<div id="weeklyContent"></div>
+</section>
+
+<section id="votes" class="screen">
+<div class="hero"><h1>Confesionario</h1><p class="sub">Todos los votos se revelan con fotos y pesos.</p></div><div id="voteContent"></div>
+</section>
+
+<section id="plate" class="screen">
+<div class="hero"><h1>Conteo y placa</h1><p class="sub">Mínimo cuatro nominados; los empates en el cuarto puesto expanden la placa.</p></div><div id="plateContent"></div>
+</section>
+
+<section id="elimination" class="screen">
+<div class="hero"><h1>Gala de eliminación</h1><p class="sub">El tipo de placa se revela recién al comenzar la fase de destierro.</p></div><div id="eliminationContent"></div>
+</section>
+
+<section id="repechage" class="screen">
+<div class="hero"><h1>Repechaje y nuevos ingresos</h1><p class="sub">Se activa automáticamente al llegar a la mitad exacta de la nómina original.</p></div><div id="repechageContent"></div>
+</section>
+
+<section id="final" class="screen">
+<div class="hero"><h1>Gran final</h1><p class="sub">Con tres activos, comienza automáticamente la final de apoyo positivo.</p></div><div id="finalContent"></div>
+</section>
+
+<section id="stats" class="screen">
+<div class="hero"><h1>Históricos y estadísticas</h1><p class="sub">Popularidad, galas, votos acumulados, veces nominado y posiciones.</p></div><div id="statsContent"></div>
+</section>
+
+</main></div></div>
+
+<div id="modal" class="modal"><div class="modal-box"><div class="section-title"><h2 id="modalTitle">Confirmación</h2><button class="btn" onclick="closeModal()">×</button></div><div id="modalBody"></div></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+window.addEventListener("error",e=>{try{console.error(e.error||e.message);if(typeof toast==="function")toast("Se produjo un error en esta acción. Probá nuevamente.")}catch(_){}});
+'use strict';
+const POS_PRESETS={"Sin apoyo":0,"Muy bajo":10,"Bajo":25,"Moderado":40,"Apreciado":55,"Popular":70,"Muy popular":85,"Favorito":100};
+const NEG_PRESETS={"Sin rechazo":0,"Mínimo":10,"Bajo":25,"Moderado":40,"Alto":55,"Muy alto":70,"Extremo":85,"Máximo":100};
+const REL_PRESETS={"Irrompible":10,"Vínculo fuerte":8,"Enlace medio":6,"Bono pequeño":4,"Ligero vínculo":2,"Neutral":0,"Ligera aversión":-2,"Leve disgusto":-4,"Disgusto medio":-6,"Fuerte aversión":-8,"Odio extremo":-10};
+const DEFAULT_EVENTS=[
+["Ligera unión","Player1 y Player2 encuentran un inesperado punto en común.","duo","positive",2],
+["Crisis emocional","Player1 atraviesa una crisis emocional que altera el ambiente.","individual","negative",3],
+["Voltear la cama","Player1 provoca una broma pesada que divide opiniones.","individual","negative",2],
+["Pancarta en el patio","Player1 recibe una muestra pública de apoyo.","individual","positive",3],
+["Comentario inapropiado","Player1 realiza un comentario que genera rechazo.","individual","negative",3],
+["Charla en la cocina","Player1 y Player2 comparten una charla que mejora el clima.","duo","positive",1],
+["Discusión por la comida","Player1 discute con Player2 y aumenta la tensión.","duo","negative",2],
+["Confesionario destacado","Player1 tiene una intervención que llama la atención de la casa.","individual","positive",2],
+["Rumor incómodo","Player1 queda involucrado en un rumor que genera rechazo.","individual","negative",2],
+["Tarde de juegos","Player1 y Player2 se divierten juntos y estrechan su vínculo.","duo","positive",2],
+["Comentario desafortunado","Player1 dice algo que cae mal a varios compañeros.","individual","negative",1],
+["Ayuda inesperada","Player1 ayuda a otro huésped y recibe una buena reacción.","individual","positive",1]
+];
+const names=["Alex","Bruno","Camila","Damián","Elena","Fabián","Gala","Hugo","Irene","Julián","Kiara","Lautaro","Micaela","Nicolás","Olivia","Pablo","Renata","Santiago","Tamara","Ulises","Valentina","Walter","Ximena","Yago","Zoe"];
+const imgFallback=(name)=>"data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"><rect width="100%" height="100%" fill="#20263a"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#eef2ff" font-size="80" font-family="Arial">${(name||"?").slice(0,1).toUpperCase()}</text></svg>`);
+let S={
+ players:[],newcomers:[],avatarId:null,mode:"natural",week:0,phase:"config",leaderId:null,fulminatedId:null,fulminatorId:null,
+ fulminatedIds:[],fulminatorIds:[],usedFulminantes:{},spontaneous:false,votes:[],voteTotals:{},plate:[],finalPlate:[],eliminationType:null,
+ leaderBenefitType:null,leaderBenefitTargets:[],leaderBenefitResolved:false,leaderBenefitNotice:"",leaderBenefitHistory:[],leaderImmuneId:null,leaderPowerNotice:"",
+ voteModifiers:{},tripleNominationIds:[],tripleNominationSources:{},eliminatedBenefitType:null,eliminatedBenefitTarget:null,eliminatedBenefitResolved:false,_lastEliminatedId:null,
+ eliminated:[],events:[],relations:{},history:[],placements:{},placementHistory:{},plateStreakType:null,plateStreakRemaining:0,repechageDone:false,newcomersAdded:false,finalStep:0,
+ pendingEvents:[],seasonStarted:false,weekStarted:false,userSpontaneousPending:false,_repechageUserVote:null,_galaRemaining:[],_galaSafe:[]
+};
+function uid(){return Math.random().toString(36).slice(2,9)}
+const INITIAL_PUBLIC_POPULARITY=45;
+const INCOMING_PUBLIC_POPULARITY=45; // Reingresados y nuevos: mismo punto de partida público que los originales
+function player(name="",gender="female",initialPopularity=INITIAL_PUBLIC_POPULARITY){const pop=clampPop(initialPopularity);return {id:uid(),name:name||"Jugador",gender,photo:"",positive:pop,negative:pop,housePositive:0,houseNegative:0,eventPositiveCount:0,eventNegativeCount:0,eventNeutralCount:0,active:true,eliminated:false,votesReceived:0,totalVotesReceived:0,timesNominated:0,usedFulminante:false,entryType:"original"}}
+function activePlayers(){return S.players.filter(p=>p.active)}
+function getP(id){return S.players.find(p=>p.id===id)}
+function esc(x){return String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function img(p,cls="avatar"){return `<img class="${cls}${p?.active?'':' gray'}" src="${esc(p?.photo||imgFallback(p?.name))}" onerror="this.src='${imgFallback(p?.name)}'">`}
+function renderHouseGrid(){
+ const active=activePlayers().length, eliminated=S.players.length-active;
+ return `<div class="card house-status"><div class="section-title"><div><h2>Estado de la casa</h2><p class="sub">Los participantes activos permanecen a color. Los eliminados continúan visibles en blanco y negro.</p></div><span class="pill">${active} activos · ${eliminated} eliminados</span></div><div class="house-grid">${S.players.map(p=>`<div class="house-card ${p.active?"":"eliminated"}">${img(p,"photo-square")}<div class="house-name">${esc(p.name)}</div><div class="house-state ${p.active?"active":""}">${p.active?`● En competencia${p.entryType==="repechaje"?" · Repechaje":p.entryType==="nuevo"?" · Nuevos":""}`:"● Eliminado"}</div></div>`).join("")}</div></div>`;
+}
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2300)}
+function showScreen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll(".navbtn").forEach(x=>x.classList.toggle("active",x.dataset.screen===id));renderAll()}
+document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>showScreen(b.dataset.screen));
+function resizePlayers(){
+ let n=Math.max(3,Math.min(50,+document.getElementById("playerCount").value||12));
+ while(S.players.length<n) S.players.push(player(names[S.players.length%names.length],S.players.length%2?"male":"female"));
+ while(S.players.length>n) S.players.pop();
+ renderConfig();
+}
+function renderConfig(){
+ document.getElementById("playerCount").value=S.players.length;
+ const sel=document.getElementById("avatarSelect");sel.innerHTML=`<option value="">Sin Avatar / espectador</option>`+activePlayers().map(p=>`<option value="${p.id}" ${S.avatarId===p.id?"selected":""}>${esc(p.name)}</option>`).join("");
+ document.getElementById("gameMode").value=S.mode;
+ document.getElementById("playersForm").innerHTML=S.players.map((p,i)=>`<div class="player-row">
+ <div>${img(p,"avatar sm")}</div><div><label>Jugador ${i+1}</label><input value="${esc(p.name)}" onchange="S.players[${i}].name=this.value;renderConfig()"></div>
+ <div><label>Género</label><select onchange="S.players[${i}].gender=this.value"><option value="female" ${p.gender==="female"?"selected":""}>Mujer</option><option value="male" ${p.gender==="male"?"selected":""}>Hombre</option></select></div>
+ <div><label>Foto URL</label><input value="${esc(p.photo)}" placeholder="https://..." oninput="S.players[${i}].photo=this.value" onchange="renderConfig()"></div>
+ <div><label>Archivo</label><input type="file" accept="image/*" onchange="readPhoto(event,'${p.id}')"></div></div>`).join("");
+ document.getElementById("newcomersForm").innerHTML=S.newcomers.map((p,i)=>`<div class="card"><div class="photo-input">${img(p,"avatar lg")}<div><label>Nuevo ${i+1}</label><input value="${esc(p.name)}" onchange="S.newcomers[${i}].name=this.value"><label>Foto URL</label><input value="${esc(p.photo)}" placeholder="https://sitio.com/foto.jpg" oninput="S.newcomers[${i}].photo=this.value" onchange="renderConfig()"><div class="actions"><button type="button" class="btn" onclick="testNewcomerUrl(${i})">Probar URL</button></div></div></div><input type="file" accept="image/*" onchange="readNewPhoto(event,${i})"></div>`).join("");
+ document.getElementById("schedule").innerHTML=Array.from({length:Math.max(1,Math.ceil(S.players.length/2))},(_,i)=>`<div class="pill" style="margin:3px">Semana ${i+1} · ${Math.max(3,S.players.length-i*2)} activos aprox.</div>`).join("");
+}
+function readPhoto(e,id){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const p=getP(id);p.photo=r.result;renderConfig()};r.readAsDataURL(f)}
+function readNewPhoto(e,i){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{S.newcomers[i].photo=r.result;renderConfig()};r.readAsDataURL(f)}
+function testNewcomerUrl(i){const p=S.newcomers[i];if(!p?.photo)return toast("Primero pegá una URL de imagen");const im=new Image();im.onload=()=>toast(`URL válida para ${p.name}`);im.onerror=()=>toast("La URL no parece apuntar directamente a una imagen accesible por el navegador");im.src=p.photo}
+function toggleCustomEventFields(){const duo=document.getElementById("evType")?.value==="duo";const s=document.getElementById("singleImpactFields"),d=document.getElementById("duoImpactFields"),r1=document.getElementById("relationFilterFields"),r2=document.getElementById("relationFilterFieldsMax");if(s)s.style.display=duo?"none":"grid";if(d)d.style.display=duo?"block":"none";if(r1)r1.style.display=duo?"block":"none";if(r2)r2.style.display=duo?"block":"none"}
+function applyConfig(){S.mode=document.getElementById("gameMode").value;S.avatarId=document.getElementById("avatarSelect").value||null;if(!S.seasonStarted){initRelations();S.seasonStarted=true;S.week=0}showScreen("popularity");toast("Configuración aplicada")}
+function randomizePlayers(){S.players.forEach((p,i)=>{p.name=names[Math.floor(Math.random()*names.length)]+" "+(i+1);p.gender=Math.random()<.5?"male":"female"});renderConfig()}
+function initRelations(){S.relations={};S.players.forEach(a=>{S.relations[a.id]={};S.players.forEach(b=>{if(a.id!==b.id)S.relations[a.id][b.id]=0})})}
+// Mantiene intactos los vínculos existentes y solo crea las relaciones que todavía no existen.
+// Se utiliza cuando ingresan nuevos participantes o cuando se recupera una temporada guardada.
+function ensureRelationsForPlayers(){
+ S.relations=S.relations||{};
+ S.players.forEach(a=>{
+  S.relations[a.id] ||= {};
+  S.players.forEach(b=>{
+   if(a.id!==b.id && typeof S.relations[a.id][b.id]!=="number") S.relations[a.id][b.id]=0;
+  });
+ });
+}
+function renderPopularity(){
+ document.getElementById("popularityTable").innerHTML=`<table><thead><tr><th>Jugador</th><th>Preset de apoyo</th><th>Extra</th><th>🟢 Apoyo</th><th>🔴 Rechazo</th></tr></thead><tbody>${S.players.map(p=>`<tr><td>${img(p,"avatar sm")} ${esc(p.name)} ${p.active?"":"<span class='pill'>Eliminado</span>"}</td><td><select onchange="setPopPreset('${p.id}',this.value)">${Object.entries(POS_PRESETS).map(([k,v])=>`<option value="${v}" ${p.positive===v?"selected":""}>${k}</option>`).join("")}</select></td><td><select onchange="S[\"_extra_${p.id}\"]=+this.value"><option value="0">Normal</option>${Array.from({length:10},(_,i)=>`<option value="${i+1}">+${i+1} apoyo</option>`).join("")}</select></td><td><input type="number" min="0" max="100" value="${p.positive}" onchange="pBy('${p.id}').positive=clampPop(+this.value)"></td><td><select onchange="setNegPreset('${p.id}',this.value)">${Object.entries(NEG_PRESETS).map(([k,v])=>`<option value="${v}" ${p.negative===v?"selected":""}>${k}</option>`).join("")}</select><input style="margin-top:6px" type="number" min="0" max="100" value="${p.negative}" onchange="pBy('${p.id}').negative=clampPop(+this.value)"></td></tr>`).join("")}</tbody></table>`
+}
+function clampPop(v){return Math.max(0,Math.min(100,Number(v)||0))}
+function pBy(id){return getP(id)}
+function setPopPreset(id,v){getP(id).positive=clampPop(v);renderPopularity()}
+function setNegPreset(id,v){getP(id).negative=clampPop(v);renderPopularity()}
+function resetPopularity(){S.players.forEach(p=>{p.positive=0;p.negative=0});renderPopularity()}
+function randomPopularity(){S.players.forEach(p=>{p.positive=Math.floor(Math.random()*61)+20;p.negative=Math.floor(Math.random()*31)});renderPopularity()}
+function applyPopularity(){S.players.forEach(p=>{const x=S["_extra_"+p.id]||0;p.positive=clampPop(p.positive+x);p.negative=clampPop(p.negative)});renderPopularity();toast("Popularidades guardadas en escala 0–100")}
+function renderRelations(preferredOriginId=null){
+ ensureRelationsForPlayers();
+ const o=document.getElementById("relationOrigin");
+ const previous=o.value;
+ const wanted=preferredOriginId||previous;
+ const players=activePlayers();
+ o.innerHTML=players.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
+ if(players.length){
+   o.value=players.some(p=>p.id===wanted)?wanted:players[0].id;
+ }
+ const origin=getP(o.value);if(!origin){document.getElementById("relationEditor").innerHTML="";return}
+ document.getElementById("relationEditor").innerHTML=`<p class="sub" style="margin-bottom:10px">Los valores que ves son las relaciones actuales de la semana. Se conservan entre semanas y también cuando un participante reingresa. Si modificás un vínculo acá, el nuevo valor queda activo para las próximas decisiones y eventos.</p><table><thead><tr><th>Destino</th><th>Afinidad</th><th>Valor</th></tr></thead><tbody>${players.filter(p=>p.id!==origin.id).map(p=>`<tr><td>${img(p,"avatar sm")} ${esc(p.name)}</td><td><select onchange="setRel('${origin.id}','${p.id}',+this.value)">${Object.entries(REL_PRESETS).map(([k,v])=>`<option value="${v}" ${rel(origin.id,p.id)===v?"selected":""}>${k}</option>`).join("")}</select></td><td>${rel(origin.id,p.id)}</td></tr>`).join("")}</tbody></table>`;
+}
+function rel(a,b){return (S.relations[a]||{})[b]??0}
+function setRel(a,b,v){S.relations[a] ||= {};S.relations[a][b]=v;if(!document.getElementById("nonMutual").checked)S.relations[b][a]=v;renderRelations()}
+function resetCurrentRelations(){const a=document.getElementById("relationOrigin").value;activePlayers().forEach(p=>{if(p.id!==a)S.relations[a][p.id]=0});renderRelations()}
+function resetAllRelations(){activePlayers().forEach(a=>activePlayers().forEach(b=>{if(a.id!==b.id)S.relations[a.id][b.id]=0}));renderRelations()}
+function seedEvents(){S.events=DEFAULT_EVENTS.map(x=>({id:uid(),name:x[0],text:x[1],type:x[2],modifier:x[3],severity:x[4],modifier1:x[3],severity1:x[4],modifier2:x[3],severity2:x[4],houseModifier:x[2]==="duo"?"neutral":"neutral",houseSeverity:0,houseModifier1:"neutral",houseSeverity1:0,houseModifier2:"neutral",houseSeverity2:0,gender:"any",popMin:0,popMax:100,relMin:-10,relMax:10,enabled:true,preset:true}))}
+function createCustomEvent(){
+ const type=document.getElementById("evType").value,duo=type==="duo";
+ const e={id:uid(),name:document.getElementById("evName").value.trim()||"Evento custom",text:document.getElementById("evText").value.trim()||"Player1 tiene un momento en la casa.",type,enabled:true,gender:document.getElementById("evGender").value,popMin:clampPop(+document.getElementById("evPopMin").value),popMax:clampPop(+document.getElementById("evPopMax").value),negMin:clampPop(+document.getElementById("evNegMin").value),negMax:clampPop(+document.getElementById("evNegMax").value),relMin:duo?Math.max(-10,Math.min(10,Number(document.getElementById("evRelMin").value))):-10,relMax:duo?Math.max(-10,Math.min(10,Number(document.getElementById("evRelMax").value))):10};
+ if(duo){e.houseModifier1=document.getElementById("evHouseMod1").value;e.houseSeverity1=+document.getElementById("evHouseSeverity1").value;e.modifier1=document.getElementById("evMod1").value;e.severity1=+document.getElementById("evSeverity1").value;e.houseModifier2=document.getElementById("evHouseMod2").value;e.houseSeverity2=+document.getElementById("evHouseSeverity2").value;e.modifier2=document.getElementById("evMod2").value;e.severity2=+document.getElementById("evSeverity2").value;e.modifier=e.modifier1;e.severity=e.severity1}else{e.houseModifier=document.getElementById("evHouseMod").value;e.houseSeverity=+document.getElementById("evHouseSeverity").value;e.modifier=document.getElementById("evMod").value;e.severity=+document.getElementById("evSeverity").value;e.modifier1=e.modifier;e.severity1=e.severity;e.houseModifier1=e.houseModifier;e.houseSeverity1=e.houseSeverity;}
+ if(e.popMin>e.popMax)[e.popMin,e.popMax]=[e.popMax,e.popMin];if(e.negMin>e.negMax)[e.negMin,e.negMax]=[e.negMax,e.negMin];S.events.push(e);renderEvents();toggleCustomEventFields();toast("Evento creado correctamente");
+}
+function renderEvents(){document.getElementById("eventList").innerHTML=S.events.map((e,i)=>{const detail=e.type==="duo"?`P1 casa: ${e.houseModifier1||e.houseModifier||"neutral"} ${e.houseSeverity1??e.houseSeverity??0} · P1 público: ${e.modifier1||e.modifier} ${e.severity1??e.severity} · P2 casa: ${e.houseModifier2||e.houseModifier||"neutral"} ${e.houseSeverity2??e.houseSeverity??0} · P2 público: ${e.modifier2||e.modifier} ${e.severity2??e.severity}`:`Casa: ${e.houseModifier||e.houseModifier1||"neutral"} ${e.houseSeverity??e.houseSeverity1??0} · Público: ${e.modifier} ${e.severity}`;return `<div class="card" style="margin-bottom:8px"><div class="section-title"><strong>${i+1}. ${esc(e.name)}</strong><button class="btn ${e.enabled?"good":"danger"}" onclick="S.events[${i}].enabled=!S.events[${i}].enabled;renderEvents()">${e.enabled?"Habilitado":"Deshabilitado"}</button></div><div class="tiny">${esc(e.type)} · ${esc(detail)} · ${esc(e.text)}</div></div>`}).join("")}
+function eventImpact(e,slot=1){return Math.max(0,Number(e[`severity${slot}`]??e.severity)||0)}
+function templateText(text,a,b){
+ const pron=a?.gender==="male"?{E:"Él",e:"él",S:"Su",s:"su",same:"él mismo"}:{E:"Ella",e:"ella",S:"Su",s:"su",same:"ella"};
+ let out=(text||"");
+ out=out.replace(/Player\s*1/gi,a?.name||"Player 1").replace(/Player\s*2/gi,b?.name||"Player 2");
+ return out.replaceAll("{Él/Ella}",pron.E).replaceAll("{él/ella}",pron.e).replaceAll("{Su/Su}",pron.S).replaceAll("{su/su}",pron.s).replaceAll("{Él/Su}",pron.E+"/"+pron.S).replaceAll("{él mismo/ella}",pron.same)
+}
+function eventPublicModifier(e,slot=1){return e?.[`modifier${slot}`]??e?.modifier??"neutral"}
+function eventBalanceWeight(p,modifier){
+ // IMPORTANTE: la popularidad pública NO participa en la asignación de eventos.
+ // Tampoco se usa el historial positivo/negativo del participante para decidir
+ // si merece un evento bueno o malo. Todos los protagonistas disponibles tienen
+ // la misma probabilidad dentro de las restricciones propias del evento.
+ return 1;
+}
+function weightedRandomFrom(items,weightFn){
+ if(!items.length)return null;
+ const weights=items.map(x=>Math.max(.001,Number(weightFn(x))||1));
+ const total=weights.reduce((a,b)=>a+b,0);let r=Math.random()*total;
+ for(let i=0;i<items.length;i++){r-=weights[i];if(r<=0)return items[i]}
+ return items[items.length-1];
+}
+function applyOneImpact(target,modifier,severity){const d=Math.max(0,Number(severity)||0);if(!target||!d||modifier==="neutral")return;if(modifier==="positive"){target.positive=clampPop(target.positive+d);target.negative=clampPop(target.negative-d)}if(modifier==="negative"){target.negative=clampPop(target.negative+d);target.positive=clampPop(target.positive-d)}}
+function applyHouseImpact(target,modifier,severity){const d=Math.max(0,Number(severity)||0);if(!target||!d||modifier==="neutral")return;if(modifier==="positive")target.housePositive=clampPop(target.housePositive+d);if(modifier==="negative")target.houseNegative=clampPop(target.houseNegative+d)}
+function applyEventImpact(e,a,b){
+ if(e.type==="duo"){
+   const m1=e.modifier1||e.modifier||"neutral",m2=e.modifier2||e.modifier||"neutral";
+   applyOneImpact(a,m1,e.severity1??e.severity);applyHouseImpact(a,e.houseModifier1||e.houseModifier||"neutral",e.houseSeverity1??e.houseSeverity??0);
+   applyOneImpact(b,m2,e.severity2??e.severity);applyHouseImpact(b,e.houseModifier2||e.houseModifier||"neutral",e.houseSeverity2??e.houseSeverity??0);
+   if(a){if(m1==="positive")a.eventPositiveCount=(a.eventPositiveCount||0)+1;else if(m1==="negative")a.eventNegativeCount=(a.eventNegativeCount||0)+1;else a.eventNeutralCount=(a.eventNeutralCount||0)+1}
+   if(b){if(m2==="positive")b.eventPositiveCount=(b.eventPositiveCount||0)+1;else if(m2==="negative")b.eventNegativeCount=(b.eventNegativeCount||0)+1;else b.eventNeutralCount=(b.eventNeutralCount||0)+1}
+   if(a&&b){S.relations[a.id] ||= {};S.relations[b.id] ||= {};const d1=(e.modifier1||e.modifier)==="negative"?-(e.severity1??e.severity):(e.modifier1||e.modifier)==="positive"?(e.severity1??e.severity):0;const d2=(e.modifier2||e.modifier)==="negative"?-(e.severity2??e.severity):(e.modifier2||e.modifier)==="positive"?(e.severity2??e.severity):0;S.relations[a.id][b.id]=Math.max(-10,Math.min(10,rel(a.id,b.id)+d1));S.relations[b.id][a.id]=Math.max(-10,Math.min(10,rel(b.id,a.id)+d2));}
+ }else{const m=e.modifier||"neutral";applyOneImpact(a,m,e.severity);applyHouseImpact(a,e.houseModifier||e.houseModifier1||"neutral",e.houseSeverity??e.houseSeverity1??0);if(a){if(m==="positive")a.eventPositiveCount=(a.eventPositiveCount||0)+1;else if(m==="negative")a.eventNegativeCount=(a.eventNegativeCount||0)+1;else a.eventNeutralCount=(a.eventNeutralCount||0)+1}}
+}
+function eligibleEventActors(e,excludeIds=new Set()){
+ // Los filtros de Apoyo/Rechazo NO se utilizan para asignar protagonistas.
+ // La popularidad pública solo interviene en sus mecánicas correspondientes
+ // (placas/versus), nunca para decidir quién recibe un evento.
+ // Se conservan las restricciones estructurales del evento, como género.
+ return activePlayers().filter(p=>!excludeIds.has(p.id)&&(e.gender==="any"||p.gender===e.gender));
+}
+function eventActorCounts(pending=[]){
+ const counts={};
+ pending.forEach(x=>{
+  if(x.a?.id)counts[x.a.id]=(counts[x.a.id]||0)+1;
+  if(x.b?.id)counts[x.b.id]=(counts[x.b.id]||0)+1;
+ });
+ return counts;
+}
+function makeRandomEvent(pool,excludeIds=new Set(),used=new Set(),usedActors=new Set(),allowActorRepeat=false,actorCounts={},repeatEligibleIds=new Set()){
+ const choices=pool.filter(e=>e.enabled);
+ for(let tries=0;tries<80;tries++){
+  const e=choices[Math.floor(Math.random()*choices.length)];if(!e)break;
+  // En la fase de repetición, solo se levantan las exclusiones de participantes
+  // que realmente están habilitados para repetir (por ejemplo, el Avatar que
+  // ya tuvo su evento elegido). Un Avatar que eligió NO participar sigue fuera.
+  const effectiveExclude=new Set(excludeIds);
+  if(allowActorRepeat)repeatEligibleIds.forEach(id=>effectiveExclude.delete(id));
+  const ps=eligibleEventActors(e,effectiveExclude);if(!ps.length)continue;
+  if(e.type==="individual"){
+   let available=ps.filter(a=>!usedActors.has(a.id));
+   if(allowActorRepeat){
+    available=ps;
+    const min=Math.min(...available.map(a=>actorCounts[a.id]||0));
+    available=available.filter(a=>(actorCounts[a.id]||0)===min);
+   }
+   if(!available.length)continue;
+   // Sin repeticiones: azar puro. En la fase de relleno: azar entre quienes
+   // tienen la menor cantidad de apariciones para repartir las repeticiones.
+   const a=available[Math.floor(Math.random()*available.length)];
+   const sig=e.id+"|"+a.id;
+   if(!allowActorRepeat&&used.has(sig))continue;
+   if(!allowActorRepeat)used.add(sig);
+   return {e,a,b:null,text:templateText(e.text,a)};
+  }
+  let pairs=[];
+  for(const a of ps){
+   for(const b of ps){
+    if(a.id===b.id)continue;
+    if(!allowActorRepeat&&(usedActors.has(a.id)||usedActors.has(b.id)))continue;
+    const r=rel(a.id,b.id);if(r<Number(e.relMin??-10)||r>Number(e.relMax??10))continue;
+    pairs.push([a,b]);
+   }
+  }
+  if(!pairs.length)continue;
+  if(allowActorRepeat){
+   // Prioridad absoluta a las parejas con menor carga. Se minimiza primero
+   // la mayor carga individual y luego la carga total; el azar desempata.
+   let best=Infinity;
+   const ranked=pairs.map(pair=>{
+    const ca=actorCounts[pair[0].id]||0,cb=actorCounts[pair[1].id]||0;
+    return {pair,score:Math.max(ca,cb)*100+ca+cb+Math.random()};
+   });
+   best=Math.min(...ranked.map(x=>Math.floor(x.score)));
+   pairs=ranked.filter(x=>Math.floor(x.score)===best).map(x=>x.pair);
+  }
+  const [a,b]=pairs[Math.floor(Math.random()*pairs.length)];
+  const sig=e.id+"|"+a.id+"|"+b.id;
+  // Durante el relleno se permiten repeticiones incluso del mismo evento:
+  // la prioridad es distribuir equitativamente la exposición, no bloquear
+  // una combinación que sea necesaria para completar los 8–10 eventos.
+  if(!allowActorRepeat&&used.has(sig))continue;
+  if(!allowActorRepeat)used.add(sig);
+  return {e,a,b,text:templateText(e.text,a,b)};
+ }
+ return null
+}
+function triggerEvents(options={}){
+ const pool=S.events.filter(e=>e.enabled),active=activePlayers();S.pendingEvents=[];if(active.length<2)return;
+ const count=8+Math.floor(Math.random()*3),used=new Set(),usedActors=new Set(),exclude=new Set(options.excludeIds||[]);
+ const repeatEligibleIds=new Set(options.repeatEligibleIds||[]);
+ if(options.forcedEvent){
+  const {e,a,b}=options.forcedEvent;
+  applyEventImpact(e,a,b);
+  used.add(e.id+"|forced");
+  if(a)usedActors.add(a.id);
+  if(b)usedActors.add(b.id);
+  S.pendingEvents.push({e,a,b,text:templateText(e.text,a,b)});
+ }
+ // REGLA DE EXPOSICIÓN SEMANAL:
+ // Mientras sea posible, cada participante aparece una sola vez.
+ let guard=0;
+ while(S.pendingEvents.length<count&&guard++<240){
+  const x=makeRandomEvent(pool,exclude,used,usedActors,false,eventActorCounts(S.pendingEvents),repeatEligibleIds);
+  if(!x)break;
+  applyEventImpact(x.e,x.a,x.b);
+  S.pendingEvents.push(x);
+  usedActors.add(x.a.id);if(x.b)usedActors.add(x.b.id);
+ }
+ // FASE DE RELLENO EQUILIBRADA:
+ // Si no alcanza para llegar a 8–10 eventos sin repetir participantes, se
+ // permiten repeticiones, pero siempre se eligen primero quienes tengan menos
+ // apariciones acumuladas esa semana. Así nadie queda artificialmente expuesto
+ // 4–5 veces mientras otros aparecen solo una.
+ if(S.pendingEvents.length<count){
+  guard=0;
+  while(S.pendingEvents.length<count&&guard++<400){
+   const counts=eventActorCounts(S.pendingEvents);
+   const fallback=makeRandomEvent(pool,exclude,used,usedActors,true,counts,repeatEligibleIds);
+   if(!fallback)break;
+   applyEventImpact(fallback.e,fallback.a,fallback.b);
+   S.pendingEvents.push(fallback);
+  }
+ }
+ if(!S.pendingEvents.length){
+  const a=active[Math.floor(Math.random()*active.length)];
+  S.pendingEvents=[{e:{id:uid(),name:"Semana tranquila",text:"La casa atraviesa una semana sin un evento destacado.",type:"individual",modifier:"neutral",severity:0,gender:"any",popMin:0,popMax:100,relMin:-10,relMax:10},a,b:null,text:`${a.name} continúa con normalidad en la casa.`}]
+ }
+ S.history.push({week:S.week,type:"events",events:S.pendingEvents.map(x=>({name:x.e.name,text:x.text,a:x.a.id,b:x.b?.id||null}))});
+}
+function renderWeekly(){
+ document.getElementById("weeklyNumber").textContent=S.week+1;
+ const avatar=getP(S.avatarId), playable=avatar&&avatar.active&&S.mode==="interactive";
+ if(!S.seasonStarted){document.getElementById("weeklyContent").innerHTML=`<div class="card"><h2>La temporada aún no comenzó</h2><button class="btn primary" onclick="showScreen('config')">Ir a configuración</button></div>`;return}
+ let html=renderHouseGrid();
+ if(!S.pendingEvents.length&&!S.leaderId&&!S.weekStarted)html+=`<div class="card"><h2>¿Qué hace tu Avatar esta semana?</h2><p class="sub">Elegí una sola acción. La casa mostrará entre 8 y 10 eventos para repartir la exposición.</p>${playable?`<div class="grid g2"><button class="btn primary event-choice" onclick="avatarChoice('duo')"><strong>🤝 Interactuar con un huésped</strong><span class="tiny">Participás en un evento junto a otra persona.</span></button><button class="btn event-choice" onclick="avatarChoice('individual')"><strong>⭐ Participar solo en un evento</strong><span class="tiny">Tu Avatar se expone individualmente.</span></button><button class="btn event-choice" onclick="avatarChoice('none')"><strong>🚫 No participar de ningún evento</strong><span class="tiny">Tu Avatar queda fuera de los eventos de la casa.</span></button><button class="btn event-choice" onclick="avatarChoice('natural')"><strong>🎲 Decidir con naturalidad</strong><span class="tiny">El simulador decide por vos.</span></button></div>`:`<button class="btn primary" onclick="startWeekly()">Proceder con los eventos de la casa</button>`}</div>`;
+ if(S.pendingEvents.length)html+=`<div class="card"><h2>Eventos acontecidos</h2><div class="grid">${S.pendingEvents.map(x=>`<div class="event-card"><div>${img(x.a)}</div><div class="event-text"><strong>${esc(x.e.name)}</strong><br>${esc(x.text)}</div><div>${x.b?img(x.b):""}</div></div>`).join("")}</div><div class="actions"><button class="btn primary" onclick="beginPreNomination()">Procedan a la votación de nominación</button></div></div>`;
+ if(S.leaderId)html+=`<div class="card" style="margin-top:14px"><h2>Líder de la semana</h2><div class="photo-input">${img(getP(S.leaderId),"avatar lg")}<div><strong>${esc(getP(S.leaderId).name)}</strong><p class="sub">Inmunidad total en la gala estándar.</p>${renderLeaderBenefitCard()}</div></div></div>`;
+ document.getElementById("weeklyContent").innerHTML=html;
+}
+function beginWeekShell(){
+ if(S.weekStarted) return;
+ S.week++;
+ S.weekStarted=true;
+ clearExpiredVoteModifiers();clearExpiredTripleNominations();
+ S.leaderId=null;S.fulminatedId=null;S.fulminatorId=null;S.fulminatedIds=[];S.fulminatorIds=[];S.leaderBenefitType=null;S.leaderBenefitTargets=[];S.leaderBenefitResolved=false;S.leaderImmuneId=null;S.leaderPowerNotice="";S.votes=[];S.voteTotals={};S.plate=[];S.finalPlate=[];S.spontaneous=false;S.pendingEvents=[];normalizeVoteModifierState();normalizeTripleState();
+}
+function avatarChoice(type){
+ const avatar=getP(S.avatarId);if(!avatar||!avatar.active)return;beginWeekShell();
+ if(type==="duo"){openModal("Elegí un huésped",`<p class="sub">Vas a participar junto a otro huésped. Después se generarán varios eventos adicionales para repartir la exposición.</p><select id="choiceTarget">${activePlayers().filter(p=>p.id!==avatar.id).map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select><div class="actions"><button class="btn primary" onclick="commitAvatarDuo()">Participar con este huésped</button></div>`)}
+ else if(type==="individual"){const pool=S.events.filter(e=>e.enabled&&e.type==="individual");const e=pool[Math.floor(Math.random()*pool.length)]||{id:uid(),name:"Momento individual",text:"Player1 tiene un momento destacado en la casa.",type:"individual",modifier:"positive",severity:1,gender:"any",popMin:0,popMax:100,relMin:-10,relMax:10};triggerEvents({excludeIds:[avatar.id],repeatEligibleIds:[avatar.id],forcedEvent:{e,a:avatar,b:null}});renderWeekly()}
+ else if(type==="none"){triggerEvents({excludeIds:[avatar.id]});renderWeekly()}
+ else triggerEvents();renderWeekly();
+}
+function commitAvatarDuo(){const avatar=getP(S.avatarId),b=getP(document.getElementById("choiceTarget")?.value);closeModal();if(!avatar?.active||!b?.active)return;const pool=S.events.filter(e=>e.enabled&&e.type==="duo");const e=pool[Math.floor(Math.random()*pool.length)]||{id:uid(),name:"Interacción especial",text:"Player1 y Player2 comparten un momento decisivo.",type:"duo",modifier:"positive",severity:1,gender:"any",popMin:0,popMax:100,relMin:-10,relMax:10};triggerEvents({excludeIds:[avatar.id,b.id],repeatEligibleIds:[avatar.id,b.id],forcedEvent:{e,a:avatar,b}});renderWeekly()}
+function startWeekly(){beginWeekShell();triggerEvents();renderWeekly()}
+function normalizeVoteModifierState(){
+ S.voteModifiers=S.voteModifiers||{};
+ Object.keys(S.voteModifiers).forEach(id=>{
+  const m=S.voteModifiers[id]||{};
+  m.cancel=!!m.cancel;m.double=Number(m.double)||0;
+  m.cancelSources=Array.isArray(m.cancelSources)?m.cancelSources:[];
+  m.doubleSources=Array.isArray(m.doubleSources)?m.doubleSources:[];
+  m.cancelExpiresWeek=Number.isFinite(Number(m.cancelExpiresWeek))?Number(m.cancelExpiresWeek):null;
+  m.doubleExpiresWeek=Number.isFinite(Number(m.doubleExpiresWeek))?Number(m.doubleExpiresWeek):null;
+  S.voteModifiers[id]=m;
+ });
+}
+function voteModifier(id){
+ normalizeVoteModifierState();
+ const m=S.voteModifiers[id]||{cancel:false,double:0,cancelSources:[],doubleSources:[],cancelExpiresWeek:null,doubleExpiresWeek:null};
+ m.cancelSources=[...new Set(m.cancelSources||[])];
+ m.doubleSources=[...new Set(m.doubleSources||[])];
+ return m;
+}
+function addVoteModifier(id,type,source,expiresWeek=S.week){
+ if(!id)return;
+ const m=voteModifier(id);
+ if(type==="cancel"){m.cancel=true;m.cancelExpiresWeek=expiresWeek;if(source&&!m.cancelSources.includes(source))m.cancelSources.push(source);}
+ if(type==="double"){m.double=(m.double||0)+1;m.doubleExpiresWeek=expiresWeek;if(source&&!m.doubleSources.includes(source))m.doubleSources.push(source);}
+ S.voteModifiers[id]=m;
+}
+function clearExpiredVoteModifiers(){
+ normalizeVoteModifierState();
+ Object.keys(S.voteModifiers).forEach(id=>{
+  const m=S.voteModifiers[id];
+  if(m.cancel&&m.cancelExpiresWeek!==null&&m.cancelExpiresWeek<S.week){m.cancel=false;m.cancelSources=[];m.cancelExpiresWeek=null;}
+  if(m.double&&m.doubleExpiresWeek!==null&&m.doubleExpiresWeek<S.week){m.double=0;m.doubleSources=[];m.doubleExpiresWeek=null;}
+  if(!m.cancel&&!m.double)delete S.voteModifiers[id];
+ });
+ normalizeTripleState();
+ Object.keys(S.tripleNominationSources||{}).forEach(id=>{
+  const sources=S.tripleNominationSources[id]||[];
+  const active=sources.some(x=>x && x.expiresWeek===undefined ? false : true);
+  if(!active && !S.tripleNominationIds.includes(id))delete S.tripleNominationSources[id];
+ });
+}
+function normalizeTripleState(){
+ S.tripleNominationIds=Array.isArray(S.tripleNominationIds)?S.tripleNominationIds:[];
+ S.tripleNominationSources=S.tripleNominationSources||{};
+ if(S.tripleNominationId&&!S.tripleNominationIds.includes(S.tripleNominationId))S.tripleNominationIds.push(S.tripleNominationId);
+ S.tripleNominationIds=[...new Set(S.tripleNominationIds)];
+}
+function addTripleNomination(id,source,expiresWeek=S.week){
+ if(!id)return;normalizeTripleState();
+ if(!S.tripleNominationIds.includes(id))S.tripleNominationIds.push(id);
+ const entry=typeof source==="string"?{source,expiresWeek}:(source||{source:"",expiresWeek});
+ S.tripleNominationSources[id]=[...(S.tripleNominationSources[id]||[]).filter(x=>typeof x==="object"?x.expiresWeek>=S.week:x)];
+ if(entry.source)S.tripleNominationSources[id].push(entry);
+}
+function isTripleNominee(id){
+ normalizeTripleState();
+ const src=S.tripleNominationSources[id]||[];
+ const activeSrc=src.length?src.filter(x=>typeof x==="object"?x.expiresWeek>=S.week:x):[];
+ return S.tripleNominationIds.includes(id)&&(!src.length||activeSrc.length>0);
+}
+function tripleSourcesLabel(id){
+ const src=(S.tripleNominationSources[id]||[]).map(x=>typeof x==="object"?x.source:x).filter(Boolean);
+ return [...new Set(src)].join(" + ");
+}
+function clearExpiredTripleNominations(){
+ normalizeTripleState();
+ S.tripleNominationIds=S.tripleNominationIds.filter(id=>{
+  const src=S.tripleNominationSources[id]||[];
+  return src.length?src.some(x=>typeof x==="object"?x.expiresWeek>=S.week:true):false;
+ });
+ Object.keys(S.tripleNominationSources).forEach(id=>{
+  S.tripleNominationSources[id]=(S.tripleNominationSources[id]||[]).filter(x=>typeof x==="object"?x.expiresWeek>=S.week:true);
+  if(!S.tripleNominationSources[id].length)delete S.tripleNominationSources[id];
+ });
+}
+function voteWeightsFor(voter,special=false){
+ if(isTripleNominee(voter.id))return [3,2,1];
+ return special?[3,2]:[2,1];
+}
+function activeFulminatedIds(){return (S.fulminatedIds?.length?S.fulminatedIds:(S.fulminatedId?[S.fulminatedId]:[])).filter(id=>getP(id)?.active)}
+function isImmune(id){return id===S.leaderId||id===S.leaderImmuneId}
+function leaderBenefitCandidates(excludeTriple=false){
+ return activePlayers().filter(p=>p.id!==S.leaderId&&p.id!==S.fulminatedId&&!isImmune(p.id)&&(!excludeTriple||!isTripleNominee(p.id)));
+}
+function weightedBenefitTarget(list,leader){
+ if(!list.length)return null;
+ const scored=list.map(p=>({p,score:rel(leader.id,p.id)*0.7+Math.random()*10}));
+ scored.sort((a,b)=>b.score-a.score);
+ return scored.slice(0,Math.min(4,scored.length))[Math.floor(Math.random()*Math.min(4,scored.length))]?.p||null;
+}
+function chooseLeaderBenefitType(){
+ const n=activePlayers().length;
+ if(n<=10)return 6;
+ const allowed=[1,2,3,4,5,6];
+ const h=S.leaderBenefitHistory||[];
+ if(h.length>=2&&h[h.length-1]===h[h.length-2]){const filtered=allowed.filter(x=>x!==h[h.length-1]);return filtered[Math.floor(Math.random()*filtered.length)]}
+ return allowed[Math.floor(Math.random()*allowed.length)];
+}
+function benefitLabel(t){
+ return {1:"Anulación de votos",2:"Duplicación de votos",3:"Voto Fulminante del líder",4:"Inmunidad para un participante",5:"Nominación de 3 personas",6:"Sin beneficio extra"}[t]||"Sin beneficio extra";
+}
+function leaderBenefitStatus(id){
+ const m=voteModifier(id);const src=[];
+ if(m.cancel)src.push(`Votos anulados${m.cancelSources.length?" — "+m.cancelSources.join(" + "):""}`);
+ if(m.double)src.push(`Votos duplicados ×${2**m.double}${m.doubleSources.length?" — "+m.doubleSources.join(" + "):""}`);
+ if(isTripleNominee(id))src.push(`Nominación de 3 personas${tripleSourcesLabel(id)?" — "+tripleSourcesLabel(id):""}`);
+ if(isImmune(id)&&id!==S.leaderId)src.push("Inmunidad del Líder");
+ return src.join(" · ");
+}
+function applyLeaderBenefitTargets(){
+ const t=S.leaderBenefitType, leader=getP(S.leaderId);if(!leader)return;
+ if(t===1)S.leaderBenefitTargets.forEach(id=>addVoteModifier(id,"cancel","Líder",S.week));
+ if(t===2)S.leaderBenefitTargets.forEach(id=>addVoteModifier(id,"double","Líder",S.week));
+ if(t===3){const id=S.leaderBenefitTargets[0];if(id&&!isImmune(id)){S.fulminatedIds=[...new Set([...(S.fulminatedIds||[]),id])];S.fulminatorIds=[...new Set([...(S.fulminatorIds||[]),leader.id])];S.fulminatedId=S.fulminatedIds[0];S.fulminatorId=S.fulminatorIds[0];}}
+ if(t===4){const id=S.leaderBenefitTargets[0];if(id)S.leaderImmuneId=id;}
+ if(t===5){const id=S.leaderBenefitTargets[0];if(id)addTripleNomination(id,{source:"Líder",expiresWeek:S.week});}
+}
+function configureLeaderBenefit(type,targets){
+ S.leaderBenefitType=type;S.leaderBenefitTargets=[...(targets||[])];S.leaderBenefitResolved=true;
+ S.leaderBenefitNotice=`El beneficio del Líder esta semana es: <b>${benefitLabel(type)}</b>.`;
+ S.leaderBenefitHistory=S.leaderBenefitHistory||[];S.leaderBenefitHistory.push(type);if(S.leaderBenefitHistory.length>10)S.leaderBenefitHistory.shift();
+ applyLeaderBenefitTargets();
+}
+function renderLeaderBenefitCard(){
+ const leader=getP(S.leaderId);if(!leader)return "";
+ const n=activePlayers().length;
+ return `<div class="notice" style="margin-top:12px"><strong>🎁 El beneficio del Líder esta semana es</strong><br>${S.leaderBenefitResolved?benefitLabel(S.leaderBenefitType):"Pendiente de elección"}</div>`;
+}
+function continuePreNomination(){
+ const user=getP(S.avatarId);
+ let html=`<div class="card"><h2>👑 Líder: ${esc(getP(S.leaderId).name)}</h2><p class="sub">Inmunidad total. ${S.leaderBenefitResolved?benefitLabel(S.leaderBenefitType):"Se resolverá el beneficio del Líder"}.</p>${renderLeaderBenefitCard()}`;
+ html+=`<p class="sub">Antes del confesionario se resuelve la Fulminante de los participantes.</p>`;
+ if(user&&user.active&&!user.usedFulminante&&user.id!==S.leaderId)html+=`<div class="actions"><button class="btn danger" onclick="useUserFulminante()">Usar mi Voto Fulminante</button><button class="btn primary" onclick="skipFulminante()">No usar</button></div>`;
+ else html+=`<div class="actions"><button class="btn primary" onclick="runBotFulminante()">Continuar</button></div>`;
+ html+=`</div>`;showScreen("weekly");document.getElementById("weeklyContent").innerHTML+=html;
+}
+function renderLeaderBenefitChooser(){
+ const leader=getP(S.leaderId),n=activePlayers().length;
+ if(!leader)return;
+ if(n<=10){configureLeaderBenefit(6,[]);continuePreNomination();return;}
+ const allowed=[1,2,3,4,5,6];
+ const opts=allowed.map(t=>`<option value="${t}">${t} — ${benefitLabel(t)}</option>`).join("");
+ const html=`<div class="card"><h2>🎁 Beneficio del Líder</h2><p class="sub">Elegí qué beneficio usar esta semana. Los objetivos elegidos permanecen ocultos hasta la revelación de votos.</p><select id="leaderBenefitSelect">${opts}</select><div class="actions"><button class="btn primary" onclick="commitLeaderBenefitChoice()">Confirmar beneficio</button></div></div>`;
+ showScreen("weekly");document.getElementById("weeklyContent").innerHTML+=html;
+}
+function commitLeaderBenefitChoice(){
+ const t=+document.getElementById("leaderBenefitSelect").value,leader=getP(S.leaderId),n=activePlayers().length;
+ if(t===6){configureLeaderBenefit(6,[]);return continuePreNomination();}
+ let candidates=leaderBenefitCandidates(t===5);
+ if(t===1||t===2){
+  const max=t===1?Math.min(5,Math.max(2,candidates.length)):Math.min(3,Math.max(2,candidates.length));
+  openModal(benefitLabel(t),`<p>Elegí ${max===2?"2 a "+max:max+" personas"}. ${t===1?"Sus votos emitidos quedarán anulados esta semana.":"Sus votos emitidos tendrán el valor duplicado en esta nominación."}</p><div id="leaderTargets">${candidates.map(p=>`<label style="margin:7px 0"><input type="checkbox" name="leaderTarget" value="${p.id}" style="width:auto;margin-right:8px">${esc(p.name)}</label>`).join("")}</div><div class="actions"><button class="btn primary" onclick="commitLeaderTargets(${t},${max})">Confirmar</button></div>`);
+ }else if(t===3||t===4||t===5){
+  openModal(benefitLabel(t),`<p>Elegí un participante.</p><select id="leaderOneTarget">${candidates.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select><div class="actions"><button class="btn primary" onclick="commitLeaderOneTarget(${t})">Confirmar</button></div>`);
+ }
+}
+function commitLeaderTargets(t,max){
+ const ids=[...document.querySelectorAll('input[name="leaderTarget"]:checked')].map(x=>x.value);
+ const min=t===1?2:2;
+ if(ids.length<min||ids.length>max)return toast(`Elegí entre ${min} y ${max} personas`);
+ closeModal();configureLeaderBenefit(t,ids);continuePreNomination();
+}
+function commitLeaderOneTarget(t){const id=document.getElementById("leaderOneTarget")?.value;if(!id)return;closeModal();configureLeaderBenefit(t,[id]);continuePreNomination();}
+function beginPreNomination(){
+ const ap=activePlayers();if(ap.length<=3){startFinal();return}
+ if(ap.length<=7){
+  S.leaderId=null;S.leaderBenefitType=null;S.leaderBenefitTargets=[];S.leaderBenefitResolved=false;S.leaderImmuneId=null;S.leaderPowerNotice="";
+  // Desde los últimos 7 participantes la Fulminante queda definitivamente cerrada.
+  // Los jugadores que no la utilizaron antes de llegar a esta etapa pierden esa oportunidad.
+  S.fulminatedIds=[];S.fulminatorIds=[];S.fulminatedId=null;S.fulminatorId=null;
+  openNominationNoLeader();
+  return;
+ }
+ S.leaderId=ap[Math.floor(Math.random()*ap.length)].id;
+ S.leaderBenefitType=null;S.leaderBenefitTargets=[];S.leaderBenefitResolved=false;S.leaderImmuneId=null;
+ S.fulminatedIds=[];S.fulminatorIds=[];S.fulminatedId=null;S.fulminatorId=null;
+ const leader=getP(S.leaderId),user=getP(S.avatarId);
+ if(leader.id===S.avatarId&&leader.active){renderLeaderBenefitChooser();return}
+ // La IA obtiene UN solo beneficio por semana y se configura una sola vez.
+ const t=chooseLeaderBenefitType(),candidates=leaderBenefitCandidates(t===5);
+ let targets=[];
+ if(t===1||t===2){const count=t===1?2+Math.floor(Math.random()*Math.min(4,Math.max(1,candidates.length-1))):2+Math.floor(Math.random()*Math.min(2,Math.max(1,candidates.length-1)));const pool=[...candidates];while(targets.length<Math.min(count,pool.length)){const pick=weightedBenefitTarget(pool,leader);if(!pick)break;targets.push(pick.id);pool.splice(pool.findIndex(x=>x.id===pick.id),1)}}
+ else if(t>=3&&t<=5){const pick=weightedBenefitTarget(candidates,leader);if(pick)targets=[pick.id];}
+ configureLeaderBenefit(t,targets);
+ continuePreNomination();
+}
+function openNominationNoLeader(){
+ const user=getP(S.avatarId);
+ S.userSpontaneousPending=!!(user?.active&&!S.spontaneous&&Math.random()<0.12);
+ showScreen("votes");renderVotes();
+}
+function runBotFulminanteNoLeader(){
+ if(activePlayers().length<=7){openNominationNoLeader();return}
+ const bots=activePlayers().filter(p=>p.id!==S.avatarId&&!p.usedFulminante);
+ if(bots.length&&Math.random()<.25){
+  const from=bots[Math.floor(Math.random()*bots.length)],targets=activePlayers().filter(p=>p.id!==from.id&&!activeFulminatedIds().includes(p.id)),t=weightedFulminantePick(targets,from);
+  if(t){from.usedFulminante=true;S.usedFulminantes[from.id]=true;S.fulminatedIds=[...new Set([...(S.fulminatedIds||[]),t.id])];S.fulminatorIds=[...new Set([...(S.fulminatorIds||[]),from.id])];S.fulminatedId=S.fulminatedIds[0];S.fulminatorId=S.fulminatorIds[0];}
+ }
+ openNominationNoLeader();
+}
+function useUserFulminante(){
+ if(activePlayers().length<=7)return toast("La Fulminante ya está inhabilitada con 7 o menos participantes activos");
+ const candidates=activePlayers().filter(p=>p.id!==S.avatarId&&p.id!==S.leaderId&&!isImmune(p.id)&&!activeFulminatedIds().includes(p.id));
+ openModal("Voto Fulminante",`<p>Elegí un participante para enviar directamente a placa.</p><select id="fulTarget">${candidates.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select><div class="actions"><button class="btn danger" onclick="commitFul('${S.avatarId}')">Fulminar</button></div>`)}
+function commitFul(from){if(activePlayers().length<=7)return toast("La Fulminante ya está inhabilitada con 7 o menos participantes activos");const t=getP(document.getElementById("fulTarget")?.value);if(!t)return;if(isImmune(t.id)||activeFulminatedIds().includes(t.id))return toast("Esa persona no puede ser fulminada");S.fulminatedIds=[...new Set([...(S.fulminatedIds||[]),t.id])];S.fulminatorIds=[...new Set([...(S.fulminatorIds||[]),from])];S.fulminatedId=S.fulminatedIds[0];S.fulminatorId=S.fulminatorIds[0];getP(from).usedFulminante=true;S.usedFulminantes[from]=true;closeModal();toast(`${t.name} fue fulminado`);renderWeekly()}
+function skipFulminante(){closeModal();runBotFulminante()}
+function runBotFulminante(){
+ if(activePlayers().length<=7){openNomination();return}
+ const eligible=activePlayers().filter(p=>p.id!==S.leaderId&&!isImmune(p.id)), bots=eligible.filter(p=>p.id!==S.avatarId&&!p.usedFulminante);
+ if(bots.length&&Math.random()<.25){
+  const from=bots[Math.floor(Math.random()*bots.length)],targets=eligible.filter(p=>p.id!==from.id&&!isImmune(p.id)&&!activeFulminatedIds().includes(p.id)),t=weightedFulminantePick(targets,from);
+  if(t){from.usedFulminante=true;S.usedFulminantes[from.id]=true;S.fulminatedIds=[...new Set([...(S.fulminatedIds||[]),t.id])];S.fulminatorIds=[...new Set([...(S.fulminatorIds||[]),from.id])];S.fulminatedId=S.fulminatedIds[0];S.fulminatorId=S.fulminatorIds[0];}
+ }
+ openNomination();
+}
+function weightedFulminantePick(targets,from){
+ if(!targets.length)return null;
+ // La Fulminante se decide por vínculo personal + azar, no por popularidad pública.
+ // El objetivo puede terminar eliminado o salvado según la placa; no se fuerza ningún resultado.
+ const scored=targets.map(p=>({p,score:(-rel(from.id,p.id))*0.9+Math.random()*6})).sort((a,b)=>b.score-a.score);
+ const top=scored.slice(0,Math.min(3,scored.length));
+ return top[Math.floor(Math.random()*top.length)]?.p||null;
+}
+function scoreThreat(p,from){return (-rel(from.id,p.id))+(-p.positive)+p.negative+Math.random()*2}
+function candidatesForVote(voter){return activePlayers().filter(p=>p.id!==voter.id&&!isImmune(p.id)&&!activeFulminatedIds().includes(p.id))}
+function chooseBotVotes(voter,special=false){
+ const c=candidatesForVote(voter);if(c.length<2)return [c[0]?.id,c[1]?.id].filter(Boolean);
+ const first=weightedNominationPick(c,voter,new Set());
+ const second=weightedNominationPick(c.filter(p=>p.id!==first?.id),voter,new Set(first?[first.id]:[]));
+ if(isTripleNominee(voter.id)){
+  const third=weightedNominationPick(c.filter(p=>p.id!==first?.id&&p.id!==second?.id),voter,new Set([first?.id,second?.id].filter(Boolean)));
+  return [first?.id,second?.id,third?.id].filter(Boolean);
+ }
+ return [first?.id,second?.id].filter(Boolean);
+}
+function recentEventProfile(id){
+ const evs=(S.pendingEvents||[]).filter(e=>e.a?.id===id||e.b?.id===id);
+ let pos=0,neg=0;
+ evs.forEach(x=>{
+   const e=x.e||{};
+   const ids=x.a?.id===id?['modifier1','houseModifier1','severity1','houseSeverity1']:x.b?.id===id?['modifier2','houseModifier2','severity2','houseSeverity2']:['modifier','houseModifier','severity','houseSeverity'];
+   const [pm,hm,ps,hs]=ids;
+   if(e[pm]==='negative')neg+=Number(e[ps]||0);
+   if(e[hm]==='negative')neg+=Number(e[hs]||0)*0.5;
+   if(e[pm]==='positive')pos+=Number(e[ps]||0);
+   if(e[hm]==='positive')pos+=Number(e[hs]||0)*0.5;
+ });
+ return {count:evs.length,pos,neg};
+}
+function threatScore(p,voter,currentVotes=0){
+ const r=rel(voter.id,p.id);
+ const ev=recentEventProfile(p.id);
+ const nominations=Number(p.timesNominated||0);
+ const inactivity=ev.count===0?0.9:ev.count===1?0.25:ev.count>=4?0.15:0;
+ // Relación personal: factor principal, pero no absoluto.
+ let score=(-r)*1.05;
+ // Clima interno: importante para las nominaciones, pero normalizado.
+ score += Number(p.houseNegative||0)*0.045;
+ score -= Number(p.housePositive||0)*0.025;
+ // Popularidad pública: influye, pero nunca domina por sí sola.
+ score += Number(p.negative||0)*0.022;
+ score -= Number(p.positive||0)*0.014;
+ // Un evento puntual tiene efecto, pero se amortigua para evitar el efecto manada.
+ score += Math.min(ev.neg,6)*0.16;
+ score -= Math.min(ev.pos,6)*0.08;
+ // Quienes ya fueron nominados varias veces reciben una pequeña protección.
+ score -= Math.min(nominations,4)*0.55;
+ // También hay votos estratégicos contra quien pasa desapercibido.
+ score += inactivity;
+ // Anti-manada: cuanto más votos recibe durante esta misma ronda, menos atractivo
+ // resulta para los siguientes votantes.
+ score -= currentVotes*0.8;
+ return score;
+}
+function weightedNominationPick(c,voter,excluded=new Set()){
+ const pool=c.filter(p=>!excluded.has(p.id));if(!pool.length)return null;
+ const scored=pool.map(p=>({p,s:threatScore(p,voter,S.votes.filter(v=>v.first===p.id||v.second===p.id).length)}));
+ const temperature=4.2;
+ const max=Math.max(...scored.map(x=>x.s));
+ const weights=scored.map(x=>Math.exp((x.s-max)/temperature));
+ const total=weights.reduce((a,b)=>a+b,0);
+ let r=Math.random()*total;
+ for(let i=0;i<scored.length;i++){r-=weights[i];if(r<=0)return scored[i].p}
+ return scored[scored.length-1].p;
+}
+function openNomination(){
+ const user=getP(S.avatarId);
+ S.userSpontaneousPending=!!(user?.active&&!S.spontaneous&&Math.random()<0.12);
+ showScreen("votes");renderVotes();
+}
+function renderVotes(){
+ const user=getP(S.avatarId), canUser=user?.active;
+ const special=canUser&&S.userSpontaneousPending, triple=canUser&&isTripleNominee(user?.id), weights=canUser?voteWeightsFor(user,special):[2,1];
+ let html=`<div class="card"><h2>${triple?"🎯 Nominación de 3 personas":special?"⭐ Nominación espontánea":"Votación tradicional"}</h2><p class="sub">${triple?"Esta semana recibiste la posibilidad especial: 3 votos al primero, 2 al segundo y 1 al tercero.":"No se puede votar al líder, inmunizado, fulminado ni a uno mismo."}</p>`;
+ if(canUser){
+  const c=candidatesForVote(user);
+  html+=`<div class="grid g2"><div><label>Primer voto — ${weights[0]} puntos</label><select id="v1">${c.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></div><div><label>Segundo voto — ${weights[1]} puntos</label><select id="v2">${c.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></div>${triple?`<div><label>Tercer voto — 1 punto</label><select id="v3">${c.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select><div class="tiny">Debe ser una tercera persona distinta de las dos anteriores.</div></div>`:""}</div><div class="actions"><button class="btn primary" onclick="submitUserVote()">${triple?"Emitir nominación de 3 personas":special?"Emitir nominación espontánea":"Enviar votos"}</button><button class="btn" onclick="naturalUserVote()">Decidir naturalmente</button></div>`;
+ } else html+=`<div class="notice">Modo espectador: el Avatar ya no puede emitir votos. La IA decidirá automáticamente.</div><div class="actions"><button class="btn primary" onclick="runAllVotes()">Ejecutar confesionario</button></div>`;
+ document.getElementById("voteContent").innerHTML=html;
+}
+function submitUserVote(){
+ const a=document.getElementById("v1")?.value,b=document.getElementById("v2")?.value,c=document.getElementById("v3")?.value;
+ if(!a)return toast("Elegí al menos un primer candidato");
+ if(!b||a===b)return toast("Elegí dos personas diferentes");
+ const special=!!S.userSpontaneousPending,triple=isTripleNominee(S.avatarId),weights=voteWeightsFor(getP(S.avatarId),special);
+ if(triple&&(!c||c===a||c===b))return toast("Elegí tres personas diferentes");
+ S.votes.push({voter:S.avatarId,first:a,second:b,third:triple?c:null,weights,special,triple});
+ S.userSpontaneousPending=false;if(special)S.spontaneous=true;runAllVotes();
+}
+function naturalUserVote(){
+ const user=getP(S.avatarId);if(!user?.active)return runAllVotes();
+ const special=!!S.userSpontaneousPending,[a,b,c]=chooseBotVotes(user,special);
+ if(!a||!b)return toast("No hay suficientes candidatos para votar");
+ const triple=isTripleNominee(user.id),weights=voteWeightsFor(user,special);
+ if(triple&&!c)return toast("No hay suficientes candidatos para nominar a tres personas");
+ S.votes.push({voter:user.id,first:a,second:b,third:triple?c:null,weights,special,triple});
+ S.userSpontaneousPending=false;if(special)S.spontaneous=true;runAllVotes();
+}
+function runAllVotes(){
+ activePlayers().filter(p=>p.id!==S.avatarId||!S.votes.some(v=>v.voter===p.id)).forEach(v=>{
+  const special=!S.spontaneous&&Math.random()<0.12;if(special)S.spontaneous=true;
+  const [a,b,c]=chooseBotVotes(v,special);if(a&&b)S.votes.push({voter:v.id,first:a,second:b,third:isTripleNominee(v.id)?c:null,weights:voteWeightsFor(v,special),special,triple:isTripleNominee(v.id)});
+ });
+ S.voteTotals={};activePlayers().forEach(p=>p.votesReceived=0);
+ S.votes.forEach(v=>{
+  const mod=voteModifier(v.voter);
+  const factor=mod.double&&(!mod.doubleExpiresWeek||mod.doubleExpiresWeek===S.week)?2**mod.double:1;
+  if(mod.cancel&&(!mod.cancelExpiresWeek||mod.cancelExpiresWeek===S.week))return;
+  const add=(id,w)=>{if(!id)return;const effective=w*factor;S.voteTotals[id]=(S.voteTotals[id]||0)+effective;const p=getP(id);if(p){p.votesReceived+=effective;p.totalVotesReceived=(Number(p.totalVotesReceived)||0)+effective;}};
+  add(v.first,v.weights[0]);add(v.second,v.weights[1]);if(v.third)add(v.third,v.weights[2]||1);
+ });
+ buildPlate();renderVotesReveal();
+}
+function renderLeaderWeekBanner(){
+ const leader=getP(S.leaderId);
+ if(!leader)return "";
+ return `<div class="notice" style="margin-bottom:14px"><strong>👑 Líder de la semana: ${esc(leader.name)}</strong><br><span class="tiny">El Líder tiene inmunidad propia durante esta semana.</span></div>`;
+}
+function renderVotesReveal(){
+ const fulms=activeFulminatedIds().map(getP).filter(Boolean);
+ const fulmNotice=fulms.length?`<div class="card danger-box" style="margin-bottom:14px"><strong>⚡ Voto Fulminante</strong><br>${fulms.map((p,i)=>`<div>Por decisión de <b>${esc(getP(S.fulminatorIds?.[i])?.name||"un participante")}</b> fue fulminado <b>${esc(p.name)}</b>. El objetivo ingresó directamente a la placa.</div>`).join("")}</div>`:"";
+ const benefitNotice=S.leaderBenefitResolved?`<div class="card" style="margin-bottom:14px"><strong>🎁 Beneficio del Líder</strong><br>El beneficio de esta semana fue: <b>${benefitLabel(S.leaderBenefitType)}</b>${S.leaderBenefitTargets.length?`<div class="tiny" style="margin-top:6px">Participante(s) afectado(s): ${S.leaderBenefitTargets.map(id=>esc(getP(id)?.name||"—")).join(", ")}</div>`:""}</div>`:"";
+ const eliminatedNotice=S.eliminatedBenefitResolved&&S.eliminatedBenefitType?`<div class="card" style="margin-bottom:14px"><strong>☠ Último participante eliminado (${esc(getP(S._lastEliminatedId)?.name||"—")}) decidió que:</strong><br>${benefitLabel(S.eliminatedBenefitType)}${S.eliminatedBenefitTarget?`<div class="tiny" style="margin-top:6px">Otorgado a: <b>${esc(getP(S.eliminatedBenefitTarget)?.name||"—")}</b></div>`:""}</div>`:"";
+ const statuses=activePlayers().map(p=>`<span class="pill" style="margin:3px">${esc(p.name)}: ${esc(leaderBenefitStatus(p.id)||"Sin beneficio")}</span>`).join("");
+ const voteCards=S.votes.map(v=>{
+  const voter=getP(v.voter),a=getP(v.first),b=getP(v.second),c=v.third?getP(v.third):null,mod=voteModifier(v.voter);
+  const activeCancel=mod.cancel&&(!mod.cancelExpiresWeek||mod.cancelExpiresWeek===S.week);
+  const factor=mod.double&&(!mod.doubleExpiresWeek||mod.doubleExpiresWeek===S.week)?2**mod.double:1;
+  const voterEffect=activeCancel?`<div class="notice" style="margin:8px 0">🚫 Los votos emitidos por <b>${esc(voter?.name||"—")}</b> quedan <b>ANULADOS</b>.</div>`:factor>1?`<div class="notice" style="margin:8px 0">✖️ Los votos emitidos por <b>${esc(voter?.name||"—")}</b> se computan <b>×${factor}</b>.</div>`:"";
+  const w1=v.weights[0]*factor,w2=v.weights[1]*factor,w3=(v.weights[2]||1)*factor;
+  return `<div class="card"><div class="event-card"><div>${img(voter)}</div><div class="event-text"><strong>${esc(voter?.name||"—")}</strong><br>${v.triple?"🎯 Nominación de 3 personas":v.special?"⭐ Nominación espontánea":"Votación estándar"}${voterEffect}<br>${img(a,"avatar sm")} ${esc(a?.name||"—")} — <b>${activeCancel?0:w1} VOTOS${factor>1&&!activeCancel?" efectivos":""}</b><br>${img(b,"avatar sm")} ${esc(b?.name||"—")} — <b>${activeCancel?0:w2} VOTOS${factor>1&&!activeCancel?" efectivos":""}</b>${c?`<br>${img(c,"avatar sm")} ${esc(c.name)} — <b>${activeCancel?0:w3} VOTO${factor>1&&!activeCancel?" efectivo":""}</b>`:""}</div><div></div></div></div>`;
+ }).join("");
+ document.getElementById("voteContent").innerHTML=`${renderLeaderWeekBanner()}${benefitNotice}${eliminatedNotice}${fulmNotice}<div class="card" style="margin-bottom:14px"><h3>Estado de beneficios al revelar los votos</h3>${statuses}</div><div class="card"><p class="sub">Aquí se muestra únicamente quién nominó a quién y cómo se aplicó el beneficio sobre los votos emitidos. El conteo acumulado y los más votados se revelan exclusivamente en la pestaña <b>Placa</b>.</p></div><div class="grid">${voteCards}</div><div class="actions"><button class="btn primary" onclick="showScreen('plate')">Ver conteo y placa</button></div>`;
+}
+
+function buildPlate(){
+ const excluded=new Set([S.leaderId,S.leaderImmuneId,...activeFulminatedIds()].filter(Boolean));
+ const ranked=activePlayers().filter(p=>!excluded.has(p.id)).map(p=>({p,v:S.voteTotals[p.id]||0})).sort((a,b)=>b.v-a.v);
+ const n=activePlayers().length;
+ const positive=ranked.filter(x=>x.v>0);
+ let pool=n<=7?ranked:(positive.length?positive:ranked);
+ const slots=n<=7?3:4;
+ const threshold=pool[Math.min(slots-1,pool.length-1)]?.v??0;
+ S.plate=pool.filter(x=>x.v>=threshold).map(x=>x.p.id);
+ activeFulminatedIds().forEach(id=>{if(!S.plate.includes(id))S.plate.unshift(id)});
+ S.plate.forEach(id=>{const p=getP(id);if(p)p.timesNominated++});
+}
+
+function renderPlate(){
+ const rows=activePlayers().map(p=>({p,v:S.voteTotals[p.id]||0})).sort((a,b)=>b.v-a.v);
+ document.getElementById("plateContent").innerHTML=`${renderLeaderWeekBanner()}<div class="card"><h2>Conteo acumulado</h2><table><thead><tr><th>Jugador</th><th>Votos</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${img(x.p,"avatar sm")} ${esc(x.p.name)} ${activeFulminatedIds().includes(x.p.id)?"⚡":""}</td><td><b>${x.v}</b></td></tr>`).join("")}</tbody></table></div><div class="card" style="margin-top:14px"><h2>Placa inicial</h2><div class="cards">${S.plate.map(id=>{const p=getP(id);return `<div class="person-card">${img(p,"photo-square")}<h3>${esc(p.name)}</h3><span class="pill">${S.voteTotals[id]||0} votos${activeFulminatedIds().includes(id)?" · Fulminado":""}</span></div>`}).join("")}</div><div class="actions"><button class="btn primary" onclick="${activePlayers().length<=7?"startElimination()":"leaderPower()"}">${activePlayers().length<=7?"Proceder a la gala de eliminación":"Continuar al poder del líder"}</button></div></div>`;
+}
+
+function leaderPower(){
+ const leader=getP(S.leaderId),n=activePlayers().length,nominated=S.plate.map(getP).filter(Boolean);
+ if(!leader){
+  S.leaderPowerNotice="Desde los 7 últimos participantes ya no existe Líder de la semana: no hay inmunidad ni poder de salvar/subir.";
+  renderFinalPlate(S.leaderPowerNotice);
+  return;
+ }
+ const up=n>10?activePlayers().filter(p=>!S.plate.includes(p.id)&&p.id!==leader.id&&!S.leaderImmuneId):[];
+ if(!nominated.length){
+  S.leaderPowerNotice=`El Líder <b>${esc(leader.name)}</b> no tuvo participantes disponibles para salvar en esta placa.`;
+  renderFinalPlate(S.leaderPowerNotice);
+  return;
+ }
+ if(leader.id===S.avatarId&&leader.active){
+  document.getElementById("plateContent").innerHTML=`${renderLeaderWeekBanner()}<div class="card"><h2>Poder del Líder</h2><p class="sub">Con ${n} participantes activos, el Líder puede salvar a 1 participante. Desde los últimos 10 jugadores activos ya no existe el poder de subir a alguien.</p><div class="grid"><div><label>Salvar</label><select id="saveTarget">${nominated.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></div>${n>10?`<div><label>Subir</label><select id="upTarget">${up.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")||"<option value=''>Sin candidatos</option>"}</select></div>`:""}</div><div class="actions"><button class="btn primary" onclick="commitLeaderPower()">${n>10?"Salvar y subir":"Salvar"}</button></div></div>`;
+ }else{
+  const weightedPick=(list,scoreFn)=>{if(!list.length)return null;const scored=list.map(p=>({p,score:scoreFn(p)+Math.random()*8}));scored.sort((a,b)=>b.score-a.score);const top=scored.slice(0,Math.min(3,scored.length));return top[Math.floor(Math.random()*top.length)].p;};
+  const savePool=nominated.filter(p=>p.id!==S.fulminatedId);
+  const save=savePool.length?weightedPick(savePool,p=>rel(leader.id,p.id)*0.55+(p.positive-p.negative)*0.03):(nominated.length?weightedPick(nominated,p=>rel(leader.id,p.id)*0.45):null);
+  if(save)S.plate=S.plate.filter(id=>id!==save.id);
+  let raised=null;
+  if(n>10&&up.length){raised=weightedPick(up,p=>-rel(leader.id,p.id)*0.55+(p.negative-p.positive)*0.025);if(raised)S.plate.push(raised.id);}
+  S.leaderPowerNotice=`Por decisión del líder <b>${esc(leader.name)}</b>${save?` salvó de la placa a <b>${esc(save.name)}</b>`:""}${raised?` y subió a la placa a <b>${esc(raised.name)}</b>`:" y no subió a nadie"}.`;
+  renderFinalPlate(S.leaderPowerNotice);
+ }
+}
+
+function commitLeaderPower(){
+ const s=document.getElementById("saveTarget")?.value,u=document.getElementById("upTarget")?.value,n=activePlayers().length;
+ if(!s)return toast("Elegí a quién salvar");
+ const saved=getP(s),raised=n>10?getP(u):null;
+ S.plate=S.plate.filter(id=>id!==s);
+ if(n>10&&u&&u!==S.leaderId&&!S.plate.includes(u))S.plate.push(u);
+ S.leaderPowerNotice=`Por decisión del líder <b>${esc(getP(S.leaderId).name)}</b> salvó de la placa a <b>${esc(saved?.name||"—")}</b>${raised?` y subió a la placa a <b>${esc(raised.name)}</b>`:" y no subió a nadie"}.`;
+ renderFinalPlate(S.leaderPowerNotice);
+}
+
+function renderFinalPlate(message=""){document.getElementById("plateContent").innerHTML=`${renderLeaderWeekBanner()}<div class="card"><h2>Placa final definitiva</h2>${message?`<div class="notice" style="margin-bottom:14px">${message}</div>`:""}<div class="cards">${S.plate.map(id=>{const p=getP(id);return `<div class="person-card">${img(p,"photo-square")}<h3>${esc(p.name)}</h3></div>`}).join("")}</div><div class="actions"><button class="btn primary" onclick="startElimination()">Procedan a la votación de expulsión</button></div></div>`}
+function galaMetricPct(ps,key,p){const vals=ps.map(x=>key==="positive"?Math.max(0,Number(x.positive)||0):Math.max(0,Number(x.negative)||0));const total=vals.reduce((a,b)=>a+b,0);if(!p||!total)return 0;const value=key==="positive"?Math.max(0,Number(p.positive)||0):Math.max(0,Number(p.negative)||0);return Math.round(value/total*1000)/10}
+function galaVersusPct(ps,key,p){const vals=ps.map(x=>key==="positive"?Math.max(0,Number(x.positive)||0):Math.max(0,Number(x.negative)||0));const total=vals.reduce((a,b)=>a+b,0);if(!p)return 0;if(!total)return 50;const value=key==="positive"?Math.max(0,Number(p.positive)||0):Math.max(0,Number(p.negative)||0);return Math.round(value/total*1000)/10}
+function galaRiskPct(ps,key,out){const scores=ps.map(p=>key==="positive"?Math.max(0,Math.max(...ps.map(x=>x.positive))-p.positive+1):Math.max(0,p.negative-Math.min(...ps.map(x=>x.negative))+1));const idx=ps.findIndex(p=>p.id===out.id);const total=scores.reduce((a,b)=>a+b,0)||1;return Math.round(scores[idx]/total*1000)/10}
+function resolveGalaTie(ps,key,candidates){if(candidates.length<=1)return candidates[0]||null;const otherKey=key==="positive"?"negative":"positive";const values=candidates.map(p=>Number(p[otherKey])||0);const bestValue=key==="positive"?Math.min(...values):Math.max(...values);const best=candidates.filter(p=>(Number(p[otherKey])||0)===bestValue);return best[Math.floor(Math.random()*best.length)]||null}
+function choosePlateType(){
+ // Rachas variables para que nunca haya una temporada dominada accidentalmente
+ // por una sola temática. Las negativas pueden durar 1-8 semanas; las positivas
+ // 1-6. Al terminar una racha, la siguiente SIEMPRE es de la temática opuesta.
+ // Esto mantiene el sesgo hacia placas negativas sin permitir cadenas indefinidas.
+ if(!S.plateStreakType || S.plateStreakRemaining<=0){
+  const type=!S.plateStreakType
+    ? (Math.random()<0.65?"negative":"positive")
+    : (S.plateStreakType==="negative"?"positive":"negative");
+  S.plateStreakType=type;
+  S.plateStreakRemaining=(type==="negative"
+    ? 1+Math.floor(Math.random()*8)
+    : 1+Math.floor(Math.random()*6));
+ }
+ const type=S.plateStreakType;
+ S.plateStreakRemaining=Math.max(0,S.plateStreakRemaining-1);
+ return type;
+}
+function startElimination(){
+ S.eliminationType=choosePlateType();S._galaRemaining=S.plate.map(id=>id).filter(id=>getP(id)?.active);S._galaSafe=[];showScreen("elimination");renderGalaStage();
+}
+function renderGalaStage(message=""){
+ const ps=S._galaRemaining.map(getP).filter(Boolean),key=S.eliminationType;
+ const title=key==="negative"?"🔻 Placa Negativa":"🔺 Placa Positiva";const rule=key==="negative"?"Se van revelando primero los que tienen MENOR rechazo. Los últimos dos quedan en peligro.":"Se van revelando primero los que tienen MAYOR apoyo. Los últimos dos quedan en peligro.";
+ const cards=ps.map(p=>`<div class="gala-card ${ps.length<=2?"danger":""}">${img(p,"photo-square")}<h3>${esc(p.name)}</h3>${ps.length<=2?"<span class='pill'>⚠️ En peligro</span>":""}</div>`).join("");
+ let button="";if(ps.length>2)button=`<button class="btn primary" onclick="revealNextGala()">Revelar siguiente salvado</button>`;else if(ps.length===2)button=`<button class="btn danger" onclick="finalizeGalaElimination()">Revelar quién es eliminado</button>`;
+ document.getElementById("eliminationContent").innerHTML=`<div class="card"><h2>${title}</h2><p>${rule}</p>${message?`<div class="notice" style="margin:12px 0">${message}</div>`:""}<div class="gala-stage">${cards}</div><div class="actions">${button}</div></div>`;
+}
+function revealNextGala(){
+ const ps=S._galaRemaining.map(getP).filter(Boolean),key=S.eliminationType;if(ps.length<=2)return renderGalaStage();
+ let safe;if(key==="positive"){const max=Math.max(...ps.map(p=>p.positive));const candidates=ps.filter(p=>p.positive===max);safe=resolveGalaTie(ps,key,candidates);}else{const min=Math.min(...ps.map(p=>p.negative));const candidates=ps.filter(p=>p.negative===min);safe=resolveGalaTie(ps,key,candidates);}
+ S._galaRemaining=S._galaRemaining.filter(id=>id!==safe.id);S._galaSafe.push(safe.id);renderGalaStage(`✓ ${esc(safe.name)} está a salvo.`);
+}
+function finalizeGalaElimination(){
+  const ps=S._galaRemaining.map(getP).filter(Boolean);if(ps.length!==2)return;const key=S.eliminationType;let out;
+  if(key==="positive"){const min=Math.min(...ps.map(p=>p.positive));const c=ps.filter(p=>p.positive===min);out=resolveGalaTie(ps,key,c)}else{const max=Math.max(...ps.map(p=>p.negative));const c=ps.filter(p=>p.negative===max);out=resolveGalaTie(ps,key,c)}
+  const fullPlate=S.plate.map(getP).filter(Boolean);const pct=galaMetricPct(fullPlate,key,out);const versus=ps.map(p=>({id:p.id,pct:galaMetricPct(fullPlate,key,p),versusPct:galaVersusPct(ps,key,p)}));const duelPct=galaVersusPct(ps,key,out);
+  out.active=false;out.eliminated=true;S.eliminated.push(out.id);S._lastEliminatedId=out.id;S.leaderBenefitResolved=false;S.leaderBenefitType=null;S.leaderBenefitTargets=[];S.leaderImmuneId=null;S.leaderPowerNotice="";S.fulminatedIds=[];S.fulminatorIds=[];S.fulminatedId=null;S.fulminatorId=null;S.placementHistory=S.placementHistory||{};S.placementHistory[out.id]=S.placementHistory[out.id]||[];const exitNo=S.history.filter(x=>x.type==="elimination").length+1;
+  S.placementHistory[out.id].push({kind:"elimination",week:S.week,pct,duelPct,eliminationType:key,exitNo,place:null});S.placements[out.id]={place:null,pct,duelPct,eliminationType:key,exitNo};S.history.push({week:S.week,type:"elimination",plate:S.plate.slice(),out:out.id,pct,duelPct,eliminationType:key,versus,exitNo});
+  const saved=S._galaSafe.map(getP), versusSaved=ps.find(p=>p.id!==out.id)||null;
+  document.getElementById("eliminationContent").innerHTML=`<div class="card"><h2>☠ Resultado de la gala</h2><p class="sub">Secuencia completa: primero se muestran los salvados, luego el último salvado del Versus y finalmente el eliminado.</p><div class="gala-stage">${saved.map((p,i)=>`<div class="gala-card safe">${img(p,"photo-square")}<h3>${esc(p.name)}</h3><span class="pill">✓ Salvado ${i+1}</span></div>`).join("")}${versusSaved?`<div class="gala-card safe">${img(versusSaved,"photo-square")}<h3>${esc(versusSaved.name)}</h3><span class="pill">✓ Salvado en el Versus</span></div>`:""}<div class="gala-card danger">${img(out,"photo-square")}<h3>${esc(out.name)}</h3><span class="pill">☠ Ha sido desterrado</span><p class="tiny">${key==="positive"?"Apoyo":"Rechazo"} en el Versus: <b>${duelPct}%</b></p></div></div><p class="sub">El porcentaje mostrado del eliminado es exclusivamente su proporción frente al otro participante del Versus. El resto de la metodología de la placa permanece sin cambios.</p><div class="actions"><button class="btn primary" onclick="beginLastMove()">Continuar con la última jugada</button></div></div>`;
+}
+function lastMoveAvailable(){const n=activePlayers().length;return n>4}
+function beginLastMove(){
+ const n=activePlayers().length;
+ if(n<=4){S.eliminatedBenefitType=null;S.eliminatedBenefitTarget=null;S.eliminatedBenefitResolved=false;afterElimination();return;}
+ const out=getP(S._lastEliminatedId),active=activePlayers();
+ if(!out){afterElimination();return;}
+ const user=out.id===S.avatarId;
+ const type=n<=10?1:(1+Math.floor(Math.random()*3));
+ if(user){
+  S.eliminatedBenefitType=type;S.eliminatedBenefitResolved=false;
+  openModal("☠ Última jugada del eliminado",`<p>La última jugada fue sorteada automáticamente: <b>${benefitLabel(type)}</b>.</p><p>Ahora elegí a qué participante de la casa otorgársela.</p><select id="lastMoveTarget">${active.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select><div class="actions"><button class="btn primary" onclick="commitLastMoveChoice(${type})">Confirmar destinatario</button></div>`);
+ }else{
+  const candidates=active.filter(p=>p.id!==out.id);
+  const scored=candidates.map(p=>{const r=rel(out.id,p.id);return {p,r,score:type===1?(r<0?8+(-r)*2+Math.random()*3:4+Math.random()*5):(r>0?8+r*1.5+Math.random()*4:4+Math.random()*5)}}).sort((a,b)=>b.score-a.score);
+  const target=scored[0]?.p;
+  applyLastMove(type,target?.id);
+  afterElimination();
+ }
+}
+
+function chooseLastMoveTarget(){
+ const t=+document.getElementById("lastMoveType").value,candidates=activePlayers();
+ closeModal();
+ openModal("Última jugada — elegir participante",`<p>Elegí un único destinatario.</p><select id="lastMoveTarget">${candidates.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select><div class="actions"><button class="btn primary" onclick="commitLastMoveChoice(${t})">Confirmar última jugada</button></div>`);
+}
+function applyLastMove(type,targetId){
+ const target=getP(targetId);if(!target)return;
+ S.eliminatedBenefitType=type;S.eliminatedBenefitTarget=target.id;S.eliminatedBenefitResolved=true;
+ if(type===1)addVoteModifier(target.id,"cancel","Último eliminado",S.week+1);
+ if(type===2)addVoteModifier(target.id,"double","Último eliminado",S.week+1);
+ if(type===3)addTripleNomination(target.id,{source:"Último eliminado",expiresWeek:S.week+1});
+}
+function commitLastMoveChoice(type){
+ const id=document.getElementById("lastMoveTarget")?.value;if(!id)return;
+ applyLastMove(type,id);closeModal();afterElimination();
+}
+function afterElimination(){
+ if(activePlayers().length===3){startFinal();return}
+ const original=S.players.length;
+ if(!S.repechageDone&&activePlayers().length===Math.ceil(original/2)){startRepechage();return}
+ S.pendingEvents=[];S.leaderId=null;S.fulminatedId=null;S.fulminatorId=null;S.fulminatedIds=[];S.fulminatorIds=[];S.leaderBenefitType=null;S.leaderBenefitTargets=[];S.leaderBenefitResolved=false;S.leaderImmuneId=null;S.leaderPowerNotice="";S.weekStarted=false;showScreen("weekly");renderWeekly();
+}
+function startRepechage(){
+ S.repechageDone=true;S._repechageUserVote=null;S._repechageUserDecision=null;showScreen("repechage");
+ const user=getP(S.avatarId);
+ if(user&&!user.active){
+   document.getElementById("repechageContent").innerHTML=`<div class="card"><h2>↩ Repechaje — una segunda oportunidad</h2><p class="sub">Tu Avatar fue eliminado anteriormente y se abrió una vacante dentro de los reingresos que normalmente decide el azar.</p><div class="event-card" style="margin:16px 0"><div>${img(user,"photo-square")}</div><div class="event-text"><strong>${esc(user.name)}</strong><p>¿Querés intentar volver a la casa?</p><p class="tiny">Si elegís <b>sí</b>, ocupás una de las vacantes de reingreso por azar y volvés a competir. Si elegís <b>no</b>, la vacante queda libre y el simulador elegirá aleatoriamente a otro participante.</p></div><div></div></div><div class="actions"><button class="btn primary" onclick="decideUserReentry(true)">Sí, quiero reingresar</button><button class="btn danger" onclick="decideUserReentry(false)">No, prefiero no reingresar</button></div></div>`;
+   return;
+ }
+ continueRepechageRandomSlots();
+}
+function resetIncomingPublicPopularity(p){
+ if(!p)return;
+ p.positive=INCOMING_PUBLIC_POPULARITY;
+ p.negative=INCOMING_PUBLIC_POPULARITY;
+ p.votesReceived=0;
+ p.timesNominated=0;
+}
+function decideUserReentry(wantsBack){
+ const user=getP(S.avatarId);
+ if(!user||user.active){continueRepechageRandomSlots();return;}
+ S._repechageUserDecision=!!wantsBack;
+ if(wantsBack){
+  user.active=true;
+  user.eliminated=false;
+  user.entryType="repechaje";
+  resetIncomingPublicPopularity(user);
+ }
+ continueRepechageRandomSlots();
+}
+function continueRepechageRandomSlots(){
+ const eliminated=S.players.filter(p=>!p.active);
+ const user=getP(S.avatarId);
+ const slots=2;
+ const direct=[];
+ if(user?.active&&S._repechageUserDecision===true) direct.push(user);
+ const pool=eliminated.filter(p=>!direct.some(d=>d.id===p.id));
+ const needed=Math.min(slots-direct.length,pool.length);
+ const randomDirect=[...pool].sort(()=>Math.random()-.5).slice(0,needed);
+ direct.push(...randomDirect);
+ direct.forEach(p=>{
+  p.active=true;
+  p.eliminated=false;
+  p.entryType="repechaje";
+  resetIncomingPublicPopularity(p);
+ });
+ S._repechageDirect=direct.map(p=>p.id);
+ S._repechageEligible=S.players.filter(p=>!p.active);
+ document.getElementById("repechageContent").innerHTML=`<div class="card"><h2>Sub-etapa A — Reingresos por azar</h2><div class="cards">${direct.map(p=>`<div class="person-card">${img(p,"photo-square")}<h3>${esc(p.name)}</h3><span class="pill">${p.id===S.avatarId?"Reingreso elegido por vos":"Reingreso directo"}</span></div>`).join("")}</div><p class="sub">${user?.active&&user.id===S.avatarId&&S._repechageUserDecision===true?"Tu Avatar ocupó una de las vacantes y vuelve a competir. El resto de las vacantes se resolvió al azar.":"Las vacantes de esta sub-etapa fueron resueltas aleatoriamente."}</p><p class="sub">Ahora se define quiénes serán los reingresos por votación.</p><div class="actions"><button class="btn primary" onclick="repechageVote()">Pasar a la votación de la casa</button></div></div>`;
+}
+
+function repechageVote(){
+ const elig=S._repechageEligible||[];if(!elig.length){addNewcomers();return}
+ const user=getP(S.avatarId);
+ if(user?.active&&!S._repechageUserVote){
+  const c=elig;
+  document.getElementById("repechageContent").innerHTML=`<div class="card"><h2>Sub-etapa B — Votación de la casa</h2><p class="sub">Tu Avatar sigue en competencia y puede votar quién reingresa. Tenés <b>2 votos para tu primera elección</b> y <b>1 voto para tu segunda elección</b>.</p><div class="grid g2"><div><label>Primera elección — 2 votos</label><select id="rv1">${c.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></div><div><label>Segunda elección — 1 voto</label><select id="rv2">${c.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></div></div><div class="actions"><button class="btn primary" onclick="submitRepechageUserVote()">Emitir mi voto de repechaje</button><button class="btn" onclick="naturalRepechageUserVote()">Decidir naturalmente</button></div></div>`;
+  return;
+ }
+ finishRepechageVote();
+}
+function submitRepechageUserVote(){
+ const a=document.getElementById("rv1")?.value,b=document.getElementById("rv2")?.value;
+ if(!a||!b||a===b)return toast("Elegí dos candidatos diferentes para el repechaje");
+ S._repechageUserVote={first:a,second:b};finishRepechageVote();
+}
+function naturalRepechageUserVote(){
+ const user=getP(S.avatarId),elig=S._repechageEligible||[];
+ const pool=[...elig].sort((a,b)=>threatScore(b,user)-threatScore(a,user)+Math.random()-Math.random()).slice(0,2);
+ if(pool.length<2)return toast("No hay suficientes candidatos para emitir dos votos");
+ S._repechageUserVote={first:pool[0].id,second:pool[1].id};finishRepechageVote();
+}
+function finishRepechageVote(){
+ const elig=S._repechageEligible||[],totals={},rv=[];const user=getP(S.avatarId);
+ if(user?.active&&S._repechageUserVote){const u=S._repechageUserVote;rv.push({voter:user.id,first:u.first,second:u.second});totals[u.first]=(totals[u.first]||0)+2;totals[u.second]=(totals[u.second]||0)+1}
+ activePlayers().filter(v=>v.id!==S.avatarId).forEach(v=>{const pool=[...elig].sort((a,b)=>threatScore(b,v)-threatScore(a,v)+Math.random()-Math.random()).slice(0,2);if(pool.length>=2){rv.push({voter:v.id,first:pool[0].id,second:pool[1].id});totals[pool[0].id]=(totals[pool[0].id]||0)+2;totals[pool[1].id]=(totals[pool[1].id]||0)+1}});
+ const ranked=elig.map(p=>({p,v:totals[p.id]||0})).sort((a,b)=>b.v-a.v);let winners=ranked.slice(0,2).map(x=>x.p);
+ if(ranked[0]&&ranked[1]&&ranked[2]&&ranked[1].v===ranked[2].v)winners=[ranked[0].p,...[ranked[1].p,ranked[2].p].sort(()=>Math.random()-.5).slice(0,1)];
+ winners.forEach(p=>{p.active=true;p.eliminated=false;p.entryType="repechaje";resetIncomingPublicPopularity(p)}); S._repechageWinners=winners.map(p=>p.id);
+ document.getElementById("repechageContent").innerHTML=`<div class="card"><h2>Sub-etapa B — Resultado de la votación</h2><div class="cards">${winners.map(p=>`<div class="person-card">${img(p,"photo-square")}<h3>${esc(p.name)}</h3><span class="pill">Reingresa por votación</span></div>`).join("")}</div><p class="sub">Votos registrados: ${rv.length}. Los empates de vacantes se resolvieron por sorteo.</p><div class="actions"><button class="btn primary" onclick="addNewcomers()">Presentar nuevos ingresos</button></div></div>`;
+}
+function addNewcomers(){
+ const incoming=(S.newcomers||[]).slice(0,4).map(p=>({...p,id:uid(),active:true,eliminated:false,entryType:"nuevo",positive:INCOMING_PUBLIC_POPULARITY,negative:INCOMING_PUBLIC_POPULARITY,votesReceived:0,totalVotesReceived:0,timesNominated:0,usedFulminante:false,eventPositiveCount:0,eventNegativeCount:0,eventNeutralCount:0}));
+ incoming.forEach(p=>S.players.push(p));S.newcomersAdded=true;ensureRelationsForPlayers();
+ document.getElementById("repechageContent").innerHTML=`<div class="card"><h2>4 nuevos ingresos</h2><div class="cards">${incoming.map(p=>`<div class="person-card">${img(p,"photo-square")}<h3>${esc(p.name)}</h3><span class="pill">Nuevo competidor</span></div>`).join("")}</div><div class="actions"><button class="btn primary" onclick="returnToWeek()">Pasemos a la semana siguiente</button></div></div>`;
+}
+function returnToWeek(){S.pendingEvents=[];S.leaderId=null;S.fulminatedId=null;S.fulminatorId=null;S.weekStarted=false;showScreen("weekly");renderWeekly()}
+function startFinal(){
+ const f=activePlayers();if(f.length!==3)return;
+ S.finalPlate=f.map(p=>p.id);S.finalStep=0;showScreen("final");renderFinal();
+}
+function renderFinal(){
+ const f=S.finalPlate.map(getP);if(S.finalStep===0)document.getElementById("finalContent").innerHTML=`<div class="card"><h2>Ganará ${f.map(p=>esc(p.name)).join(", ")}.</h2><div class="cards final-contenders">${f.map(p=>`<div class="person-card">${img(p,"photo-square")}<h3>${esc(p.name)}</h3></div>`).join("")}</div><div class="actions"><button class="btn primary" onclick="revealThird()">Veamos quién queda en tercer lugar</button></div></div>`;
+ else if(S.finalStep===1){const third=f.slice().sort((a,b)=>a.positive-b.positive)[0];S._third=third.id;const total=f.reduce((s,p)=>s+p.positive,0)||1;const pct=(third.positive/total*100).toFixed(1);document.getElementById("finalContent").innerHTML=`<div class="card"><div class="person-card">${img(third,"photo-square")}<h2>¡${esc(third.name)} queda en tercer lugar!</h2><p>Con el ${pct}% de los votos.</p></div><div class="actions"><button class="btn primary" onclick="revealWinner()">Continúa para ver quién es el ganador/a</button></div></div>`}
+ else {const remain=f.filter(p=>p.id!==S._third),total=remain.reduce((s,p)=>s+p.positive,0)||1,w=[...remain].sort((a,b)=>b.positive-a.positive),winner=w[0],runner=w[1],wp=(winner.positive/total*100).toFixed(1),rp=(runner.positive/total*100).toFixed(1);S.placementHistory=S.placementHistory||{};S.placementHistory[winner.id]=S.placementHistory[winner.id]||[];S.placementHistory[runner.id]=S.placementHistory[runner.id]||[];S.placementHistory[S._third]=S.placementHistory[S._third]||[];S.placementHistory[winner.id].push({kind:"final",place:1,pct:+wp,metric:"positive"});S.placementHistory[runner.id].push({kind:"final",place:2,pct:+rp,metric:"positive"});S.placementHistory[S._third].push({kind:"final",place:3,pct:+((getP(S._third).positive/(f.reduce((s,p)=>s+p.positive,0)||1))*100).toFixed(1),metric:"positive"});S.placements[winner.id]={place:1,pct:+wp,metric:"positive"};S.placements[runner.id]={place:2,pct:+rp,metric:"positive"};S.placements[S._third]={place:3,pct:+((getP(S._third).positive/(f.reduce((s,p)=>s+p.positive,0)||1))*100).toFixed(1),metric:"positive"};document.getElementById("finalContent").innerHTML=`<div class="card"><div class="cards">${[[winner,"GANADOR",wp],[runner,"SUBCAMPEÓN",rp]].map(x=>`<div class="person-card">${img(x[0],"photo-square")}<h2>${esc(x[0].name)}</h2><p>${x[1]} · ${x[2]}%</p></div>`).join("")}</div><div class="actions"><button class="btn primary" onclick="showScreen('stats')">Consulte las estadísticas</button></div></div>`}
+}
+function revealThird(){S.finalStep=1;renderFinal()}
+function revealWinner(){S.finalStep=2;renderFinal()}
+function finalizeRankingPositions(){
+  S.placementHistory=S.placementHistory||{};
+  const elim=S.history.filter(x=>x.type==="elimination");
+  const total=elim.length;
+  elim.forEach((x,i)=>{x.exitNo=x.exitNo||i+1;x.place=total+3-i;S.placementHistory[x.out]=S.placementHistory[x.out]||[];const entry=S.placementHistory[x.out].find(h=>h.kind==="elimination"&&h.exitNo===x.exitNo);if(entry)entry.place=x.place;else S.placementHistory[x.out].push({kind:"elimination",week:x.week,pct:x.pct,duelPct:x.duelPct,eliminationType:x.eliminationType,exitNo:x.exitNo,place:x.place});});
+  Object.keys(S.placementHistory).forEach(id=>{const hs=S.placementHistory[id]||[];const finals=hs.filter(h=>h.kind==="final");if(finals.length){const f=finals[finals.length-1];S.placements[id]={place:f.place,pct:f.pct,metric:f.metric||"positive"};}else if(hs.length){const e=hs[hs.length-1];S.placements[id]={place:e.place??null,pct:e.pct,eliminationType:e.eliminationType,exitNo:e.exitNo};}});
+}
+function placementText(p){const hs=(S.placementHistory?.[p.id]||[]).filter(h=>Number.isFinite(Number(h.place))).sort((a,b)=>a.place-b.place);if(!hs.length)return "Eliminado";return hs.map(h=>`#${h.place}`).join(" → ");}
+function placementSortValue(p){const hs=(S.placementHistory?.[p.id]||[]).filter(h=>Number.isFinite(Number(h.place)));return hs.length?Math.min(...hs.map(h=>Number(h.place))):9999;}
+function placementMetricText(p){
+ const hs=(S.placementHistory?.[p.id]||[])
+  .filter(h=>Number.isFinite(Number(h.place)))
+  .sort((a,b)=>a.place-b.place);
+ if(!hs.length)return "—";
+ return hs.map(h=>{
+  const metric=h.kind==="final"?"Apoyo":(h.eliminationType==="positive"?"Apoyo":"Rechazo");
+  let pct="—";
+  if(h.kind==="final") pct=h.pct??"—";
+  else if(Number.isFinite(Number(h.duelPct))) pct=h.duelPct;
+  else {
+   const hist=S.history.find(x=>x.type==="elimination"&&x.out===p.id&&Number(x.exitNo)===Number(h.exitNo));
+   const v=hist?.versus?.find(v=>v.id===p.id);
+   if(Number.isFinite(Number(v?.versusPct))) pct=v.versusPct;
+  }
+  return `${metric} ${pct}${pct==="—"?"":"%"}`;
+ }).join(" · ");
+}
+function renderStats(){
+  finalizeRankingPositions();
+  const all=[...S.players], ranked=all.sort((a,b)=>placementSortValue(a)-placementSortValue(b));
+  const versusCount={};S.history.filter(x=>x.type==="elimination"&&Array.isArray(x.versus)&&x.versus.length===2).forEach(x=>x.versus.forEach(v=>{versusCount[v.id]=(versusCount[v.id]||0)+1;}));
+  document.getElementById("statsContent").innerHTML=`<div class="grid g2">
+  <div class="card"><h2>🏆 Ranking final y posiciones de salida</h2><p class="sub">Cada puesto es único. Si un participante fue eliminado, reingresó y volvió a ser eliminado, se conservan ambos puestos históricos. En esta columna, las eliminaciones muestran exclusivamente el porcentaje del enfrentamiento final del Versus, nunca el porcentaje calculado sobre toda la placa.</p><table><thead><tr><th>Jugador</th><th>Puesto(s)</th><th>Porcentaje del Versus y métrica</th></tr></thead><tbody>${ranked.map(p=>`<tr><td>${img(p,"avatar sm")} ${esc(p.name)}</td><td>${placementText(p)}</td><td>${placementMetricText(p)}</td></tr>`).join("")}</tbody></table></div>
+  <div class="card"><h2>Votos de destierro recibidos</h2><table><tbody>${[...all].sort((a,b)=>(Number(b.totalVotesReceived)||0)-(Number(a.totalVotesReceived)||0)).map(p=>`<tr><td>${esc(p.name)}</td><td>${Number(p.totalVotesReceived)||0}</td></tr>`).join("")}</tbody></table></div>
+  <div class="card"><h2>Veces nominados</h2><table><tbody>${[...all].sort((a,b)=>b.timesNominated-a.timesNominated).map(p=>`<tr><td>${esc(p.name)}</td><td>${p.timesNominated}</td></tr>`).join("")}</tbody></table></div>
+  <div class="card"><h2>⚔️ Veces en Versus</h2><p class="sub">Cantidad de galas en las que el participante llegó a los últimos dos en peligro.</p><table><tbody>${[...all].sort((a,b)=>(versusCount[b.id]||0)-(versusCount[a.id]||0)).map(p=>`<tr><td>${esc(p.name)}</td><td>${versusCount[p.id]||0}</td></tr>`).join("")}</tbody></table></div>
+  <div class="card"><h2>Popularidad final</h2><table><tbody>${[...all].sort((a,b)=>(b.positive-b.negative)-(a.positive-a.negative)).map(p=>`<tr><td>${esc(p.name)}</td><td class="pos">${p.positive}</td><td class="neg">${p.negative}</td></tr>`).join("")}</tbody></table></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h2>Historial de galas</h2><p class="sub">El porcentaje mostrado corresponde al enfrentamiento final del Versus: ambos participantes suman 100% de la métrica pública utilizada por la placa. Se indica expresamente si fue Apoyo o Rechazo.</p>${S.history.filter(x=>x.type==="elimination").map(x=>`<div class="pill" style="margin:3px">Semana ${x.week}: ${esc(getP(x.out)?.name||"—")} eliminado · ${x.eliminationType==="positive"?"Apoyo":"Rechazo"} en Versus ${x.duelPct??x.pct}%</div>`).join("")||"<p class='sub'>Todavía no hay galas.</p>"}</div>
+  <div class="card" style="margin-top:14px"><h2>⚔️ Versus de cada semana</h2><p class="sub">Los dos últimos participantes en peligro, con su porcentaje de la métrica pública correspondiente a esa placa.</p><div class="cards">${S.history.filter(x=>x.type==="elimination"&&Array.isArray(x.versus)&&x.versus.length===2).map(x=>{const a=x.versus[0],b=x.versus[1],pa=getP(a.id),pb=getP(b.id);return `<div class="card" style="min-width:280px"><h3>Semana ${x.week}</h3><div class="cards g2"><div class="person-card ${x.out===a.id?"danger":""}">${img(pa,"photo-square")}<h4>${esc(pa?.name||"—")}</h4><span class="pill">${x.eliminationType==="positive"?"Apoyo":"Rechazo"} ${a.versusPct??a.pct}%${x.out===a.id?" · ☠ Eliminado":" · ✓ Salvado"}</span></div><div class="person-card ${x.out===b.id?"danger":""}">${img(pb,"photo-square")}<h4>${esc(pb?.name||"—")}</h4><span class="pill">${x.eliminationType==="positive"?"Apoyo":"Rechazo"} ${b.versusPct??b.pct}%${x.out===b.id?" · ☠ Eliminado":" · ✓ Salvado"}</span></div></div></div>`}).join("")||"<p class='sub'>Todavía no hay un versus registrado.</p>"}</div>
+  <div class="card" style="margin-top:14px"><h2>Evolución semanal</h2><p class="sub">Se registran eventos y eliminaciones en S.history. Los valores actuales se muestran como cierre de temporada.</p><div class="cards">${all.map(p=>`<div class="person-card">${img(p,"avatar sm")}<h3>${esc(p.name)}</h3><span class="pill">Apoyo ${p.positive} · Rechazo ${p.negative}</span></div>`).join("")}</div></div>
+  <div class="card" style="margin-top:14px"><h2>Reproducibilidad</h2><div class="actions"><button class="btn" onclick="restartWeek1()">Vuelve al principio / Volver a semana 1</button><button class="btn danger" onclick="resetGame(true)">¡Simula de nuevo!</button></div></div>`;
+}
+function renderElimination(){}
+function renderRepechage(){}
+function renderAll(){
+ document.getElementById("weekBadge").textContent=`Semana ${S.week}`;
+ document.getElementById("modeBadge").textContent=S.avatarId&&getP(S.avatarId)?.active?"Avatar activo":S.seasonStarted?"Modo espectador":"Configuración";
+ renderConfig();renderPopularity();renderRelations();renderEvents();renderWeekly();renderVotes();renderPlate();renderStats();
+ if(document.getElementById("elimination").classList.contains("active")){} 
+}
+function openModal(title,body){document.getElementById("modalTitle").textContent=title;document.getElementById("modalBody").innerHTML=body;document.getElementById("modal").classList.add("open")}
+function closeModal(){document.getElementById("modal").classList.remove("open")}
+function saveLocal(){
+ try{localStorage.setItem("GH_SIMULATOR",JSON.stringify(S));localStorage.setItem("GH_SIMULATOR_META",JSON.stringify({week:S.week,savedAt:new Date().toISOString(),name:"Gran Hermano — Temporada"}));return true}catch(e){console.warn("localStorage no disponible",e);return false}
+}
+function seasonPayload(){return JSON.stringify({format:"GH_SIMULATOR",version:6,savedAt:new Date().toISOString(),state:S})}
+function downloadSeasonFile(){try{const blob=new Blob([seasonPayload()],{type:"application/json;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`Gran_Hermano_Temporada_Semana_${S.week||0}.ghseason.json`;a.rel="noopener";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);toast("Copia descargable creada")}catch(e){console.error(e);toast("Este navegador no pudo descargar el archivo. Usá el código de temporada para guardarla.")}}
+function saveSeasonEverywhere(){const ok=saveLocal();downloadSeasonFile();document.getElementById("seasonCode").value=btoa(unescape(encodeURIComponent(JSON.stringify(S))));toast(ok?"Temporada guardada: archivo + navegador + código":"Temporada guardada como archivo + código (este navegador no permite almacenamiento local)")}
+function openLoadOptions(){openModal("Cargar temporada",`<p class="sub">Elegí cómo querés recuperar una temporada. En celular, la opción más segura es <b>archivo</b> o <b>código</b>. Si recibiste el HTML por WhatsApp, primero abrilo con Chrome/Safari y no desde la vista previa interna.</p><div class="actions"><button class="btn primary" onclick="document.getElementById('seasonFileInput').click();closeModal()">📂 Cargar archivo de temporada</button><button class="btn" onclick="loadLocal();closeModal()">↩ Cargar último guardado del navegador</button><button class="btn" onclick="closeModal();document.getElementById('seasonCode').focus();showScreen('config')">⌨️ Cargar mediante código</button></div>`)}
+function normalizeImportedState(raw){const x=raw?.state&&raw?.format==="GH_SIMULATOR"?raw.state:raw;S=x||S;normalizeState()}
+function normalizeState(){S.placementHistory=S.placementHistory||{};S.leaderBenefitHistory=S.leaderBenefitHistory||[];S.leaderBenefitTargets=S.leaderBenefitTargets||[];S.leaderBenefitResolved=!!S.leaderBenefitResolved;S.leaderPowerNotice=S.leaderPowerNotice||"";S.voteModifiers=S.voteModifiers||{};S.tripleNominationIds=S.tripleNominationIds||[];S.tripleNominationSources=S.tripleNominationSources||{};S.fulminatedIds=S.fulminatedIds||[];S.fulminatorIds=S.fulminatorIds||[];normalizeVoteModifierState();normalizeTripleState();S.history=S.history||[];S.history.filter(x=>x.type==="elimination").forEach((x,i)=>{S.placementHistory[x.out]=S.placementHistory[x.out]||[];if(!S.placementHistory[x.out].some(h=>h.kind==="elimination"&&h.exitNo===(x.exitNo||i+1))){const v=x.versus?.find(v=>v.id===x.out);const storedDuelPct=Number.isFinite(Number(x.duelPct))?Number(x.duelPct):(Number.isFinite(Number(v?.versusPct))?Number(v.versusPct):null);S.placementHistory[x.out].push({kind:"elimination",week:x.week,pct:x.pct,duelPct:storedDuelPct,eliminationType:x.eliminationType,exitNo:x.exitNo||i+1,place:x.place??null});}});S.plateStreakType=S.plateStreakType||null;S.plateStreakRemaining=Number(S.plateStreakRemaining||0);S.players=S.players||[];S.newcomers=S.newcomers||[];S.events=S.events||[];S.relations=S.relations||{};S.pendingEvents=S.pendingEvents||[];S.votes=S.votes||[];S.voteTotals=S.voteTotals||{};S.plate=S.plate||[];S.finalPlate=S.finalPlate||[];S.placements=S.placements||{};S.history=S.history||[];S.events.forEach(e=>{if(e.type==="duo"){e.modifier1=e.modifier1||e.modifier||"neutral";e.severity1=Number(e.severity1??e.severity)||0;e.modifier2=e.modifier2||e.modifier||"neutral";e.severity2=Number(e.severity2??e.severity)||0;e.houseModifier1=e.houseModifier1||"neutral";e.houseSeverity1=Number(e.houseSeverity1)||0;e.houseModifier2=e.houseModifier2||"neutral";e.houseSeverity2=Number(e.houseSeverity2)||0;}else{e.modifier1=e.modifier1||e.modifier||"neutral";e.severity1=Number(e.severity1??e.severity)||0;e.houseModifier=e.houseModifier||"neutral";e.houseSeverity=Number(e.houseSeverity)||0;}e.popMin=Number.isFinite(Number(e.popMin))?Number(e.popMin):0;e.popMax=Number.isFinite(Number(e.popMax))?Number(e.popMax):100;e.negMin=Number.isFinite(Number(e.negMin))?Number(e.negMin):0;e.negMax=Number.isFinite(Number(e.negMax))?Number(e.negMax):100;if(e.type==="individual"){e.relMin=-10;e.relMax=10}});S._galaRemaining=S._galaRemaining||[];S._galaSafe=S._galaSafe||[];if(typeof S.weekStarted!=="boolean")S.weekStarted=!!(S.pendingEvents.length||S.leaderId);if(typeof S.userSpontaneousPending!=="boolean")S.userSpontaneousPending=false;if(!Object.prototype.hasOwnProperty.call(S,"_repechageUserVote"))S._repechageUserVote=null;if(!Object.prototype.hasOwnProperty.call(S,"_repechageUserDecision"))S._repechageUserDecision=null;S.players.forEach(p=>{p.active=p.active!==false;p.eliminated=!!p.eliminated;p.positive=clampPop(p.positive);p.negative=clampPop(p.negative);p.housePositive=clampPop(p.housePositive);p.houseNegative=clampPop(p.houseNegative);p.votesReceived=Number(p.votesReceived)||0;p.totalVotesReceived=Number(p.totalVotesReceived);if(!Number.isFinite(p.totalVotesReceived)||p.totalVotesReceived<0)p.totalVotesReceived=0;p.timesNominated=Number(p.timesNominated)||0;p.usedFulminante=!!p.usedFulminante;p.eventPositiveCount=Number(p.eventPositiveCount)||0;p.eventNegativeCount=Number(p.eventNegativeCount)||0;p.eventNeutralCount=Number(p.eventNeutralCount)||0;if(!p.entryType){p.entryType=S.history.some(h=>h.type==="elimination"&&h.out===p.id)?(p.active?"repechaje":"original"):"original"}});ensureRelationsForPlayers()}
+function loadLocal(){try{const x=localStorage.getItem("GH_SIMULATOR");if(!x)return toast("No hay una temporada guardada en este navegador");normalizeImportedState(JSON.parse(x));renderAll();toast("Última temporada del navegador cargada")}catch(e){console.error(e);toast("Este navegador no permite recuperar el guardado local. Cargá el archivo o el código de la temporada.")}}
+function exportSeason(){const code=btoa(unescape(encodeURIComponent(JSON.stringify(S))));const box=document.getElementById("seasonCode");box.value=code;box.focus();box.select();try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(code).then(()=>toast("Código exportado y copiado al portapapeles")).catch(()=>toast("Código exportado en el cuadro de texto"))}else{toast("Código exportado en el cuadro de texto. Mantené pulsado y copiá el código.")}}catch(e){toast("Código exportado en el cuadro de texto")}}
+function importSeason(){try{const raw=document.getElementById("seasonCode").value.trim();if(!raw)return toast("Pegá primero el código de la temporada");const decoded=decodeURIComponent(escape(atob(raw)));const parsed=JSON.parse(decoded);normalizeImportedState(parsed);renderAll();toast("Temporada importada correctamente");showScreen("config")}catch(e){console.error(e);toast("Código de temporada inválido o incompleto")}}
+function importSeasonFile(e){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const raw=JSON.parse(r.result);normalizeImportedState(raw);renderAll();toast(`Temporada cargada: ${f.name}`)}catch(err){console.error(err);toast("El archivo de temporada no es válido")}};r.readAsText(f);e.target.value=""}
+function restartWeek1(){
+ const keep=S.players.map(p=>({id:p.id,name:p.name,gender:p.gender,photo:p.photo,positive:INITIAL_PUBLIC_POPULARITY,negative:INITIAL_PUBLIC_POPULARITY,housePositive:0,houseNegative:0,active:true,eliminated:false,votesReceived:0,totalVotesReceived:0,timesNominated:0,usedFulminante:false}));
+ S={...S,players:keep,week:0,phase:"config",leaderId:null,fulminatedId:null,fulminatorId:null,fulminatedIds:[],fulminatorIds:[],leaderBenefitType:null,leaderBenefitTargets:[],leaderBenefitResolved:false,leaderBenefitHistory:[],leaderImmuneId:null,voteModifiers:{},tripleNominationIds:[],tripleNominationSources:{},eliminatedBenefitType:null,eliminatedBenefitTarget:null,eliminatedBenefitResolved:false,_lastEliminatedId:null,usedFulminantes:{},votes:[],voteTotals:{},plate:[],finalPlate:[],eliminationType:null,eliminated:[],history:[],placements:{},placementHistory:{},plateStreakType:null,plateStreakRemaining:0,repechageDone:false,newcomersAdded:false,finalStep:0,pendingEvents:[],seasonStarted:true,weekStarted:false,_galaRemaining:[],_galaSafe:[]};initRelations();showScreen("weekly");toast("Regresaste a la semana 1")}
+function resetGame(all=true){
+ if(!confirm("¿Reiniciar completamente la simulación?"))return;
+ const n=S.players.length||12;S={players:Array.from({length:n},(_,i)=>player(names[i%names.length],i%2?"male":"female")),newcomers:Array.from({length:4},(_,i)=>player("Nuevo "+(i+1),i%2?"male":"female",INCOMING_PUBLIC_POPULARITY)),avatarId:null,mode:"natural",week:0,phase:"config",leaderId:null,fulminatedId:null,fulminatorId:null,fulminatedIds:[],fulminatorIds:[],leaderBenefitType:null,leaderBenefitTargets:[],leaderBenefitResolved:false,leaderBenefitHistory:[],leaderImmuneId:null,voteModifiers:{},tripleNominationIds:[],tripleNominationSources:{},eliminatedBenefitType:null,eliminatedBenefitTarget:null,eliminatedBenefitResolved:false,_lastEliminatedId:null,usedFulminantes:{},spontaneous:false,votes:[],voteTotals:{},plate:[],finalPlate:[],eliminationType:null,eliminated:[],events:[],relations:{},history:[],placements:{},placementHistory:{},plateStreakType:null,plateStreakRemaining:0,repechageDone:false,newcomersAdded:false,finalStep:0,pendingEvents:[],seasonStarted:false,weekStarted:false,_galaRemaining:[],_galaSafe:[]};initRelations();seedEvents();showScreen("config");renderAll();toast("Simulación reiniciada")}
+S.players=Array.from({length:12},(_,i)=>player(names[i],i%2?"male":"female"));
+S.newcomers=Array.from({length:4},(_,i)=>player("Nuevo "+(i+1),i%2?"male":"female",INCOMING_PUBLIC_POPULARITY));
+S.avatarId=null;initRelations();seedEvents();normalizeState();renderAll();
+try{document.documentElement.dataset.mobileReady="true"}catch(e){}
+</script>
+<script>
+(function(){
+  try {
+    var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+    var isLocal=location.protocol==='file:';
+    var n=document.getElementById('webModeNotice');
+    var txt=document.getElementById('webModeText');
+    if(n && isIOS && isLocal){
+      n.style.display='block';
+      txt.textContent='Este archivo está abierto como archivo local. En iPhone, para ejecutar todas las funciones del simulador, publicá este mismo HTML y abrilo desde una URL HTTPS en Safari. No es necesario cambiar las reglas del juego.';
+    }
+    if(window.isSecureContext && n && isIOS && !isLocal){
+      n.style.display='block';
+      n.className='mobile-help notice';
+      txt.textContent='Estás ejecutando el simulador desde una página web segura. Esta es la forma recomendada para jugar en iPhone.';
+    }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
